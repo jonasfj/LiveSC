@@ -20,7 +20,10 @@ cfg =
 		speed:				300
 	prechart:
 		padding:			50
-
+	toolbar:
+		height:				40
+	icon:
+		height:				24
 # Computed keys
 cfg.instance.width = cfg.instance.head.width + cfg.instance.padding * 2
 
@@ -103,16 +106,20 @@ class @LSC.InstanceLine
 	drag: (x, y, event) => 			#Start drag
 		@dragStartNumber = @number
 	move: (dx, dy, x, y, event) => 	#Move (during drag)
-		if @dragStartNumber?
+		###if @dragStartNumber?
 			dst = @dragStartNumber + Math.round(dx / cfg.instance.width)
 			dst = 0 if dst < 0
 			dst = @lsc.instances.length - 1 if dst >= @lsc.instances.length
 			if dst != @number
 				@lsc.moveInstance(@, dst)
+		###
+		dst = @lsc.xNumber(x)
+		if dst != @number
+			@lsc.moveInstance(@, dst)
 	drop: (event) => 				#End drag
 		@dragStartNumber = null
 class @LSC.LiveSequenceChart
-	constructor: (@name, @paper) ->
+	constructor: (@name, @paper, @x = 0, @y = cfg.toolbar.height) ->
 		@paper.raphael.el.update = (params) -> @animate params, cfg.animation.speed
 		@messages = []
 		@instances = []
@@ -121,9 +128,8 @@ class @LSC.LiveSequenceChart
 		@locations = 0			#number of locations in chart (including prechart)
 		@prechart = @paper.path("")
 		@prechart.attr
-			"stroke-dasharray": "-"
+			"stroke-dasharray": "--"
 		@postchart = @paper.path("")
-		@x = @y = 0
 		@update()
 	update: =>
 		width = Math.max(cfg.instance.width * @instances.length, cfg.chart.minwidth)
@@ -172,12 +178,92 @@ class @LSC.LiveSequenceChart
 		message.location = @locations + 1
 		message.paper = @paper
 		@locations = @locations + 1
-	numberX: (number) =>
-		return @x + cfg.prechart.padding + cfg.margin + cfg.instance.width / 2 + (number * cfg.instance.width)
-	locationY: (location) =>
+	numberX: (number) =>	#Given instance number, get x-value
+		offset = cfg.prechart.padding + cfg.margin + cfg.instance.width / 2
+		return @x + offset + (number * cfg.instance.width)
+	xNumber: (x) =>			#Given x-value for instance, get nearest number
+		offset = cfg.prechart.padding + cfg.margin + cfg.instance.width / 2
+		n = Math.round((x - @x - offset) / cfg.instance.width)
+		n = 0 if n < 0
+		n = @instances.length - 1 if n >= @instances.length
+		return n
+	locationY: (location) =>	#Given atom location get y-value
 		if location < @prelocations
 			return @y + 2 * cfg.margin + cfg.location.height * location
 		else
 			ym = @y + cfg.margin + cfg.location.height * (@prelocations + 1) + cfg.instance.head.height
 			ym += cfg.margin + cfg.location.height * location
 			return ym
+	yLocation: (y) =>			#Given y-value for atom get location
+
+class @LSC.Toolbar
+	constructor: (@paper) ->
+		#draw background
+		@bg = @paper.rect(0,0,"100%",cfg.toolbar.height)
+		@bg.attr
+			fill:"#aaa"
+			#"fill": [90,"#ccc","#fff"].join("-")
+			"stroke":"none"
+		@paper.rect(0,cfg.toolbar.height,"100%",1).attr({stroke:"none", fill:"#999"})
+		#filename
+		@title = @paper.text(cfg.margin, cfg.toolbar.height / 2, "Untitled.lsc")
+		.attr({"text-anchor":"start",font:"Verdana","font-weight":"bold"})
+		@buttons = []
+	update: =>
+		pad = (cfg.toolbar.height - cfg.icon.size) / 2
+		x = y = pad
+		x += @title.getBBox().width + pad
+		for icon in @icons
+			icon.update(x, y)
+			x += icon.rect.getBBox().width + 2 * pad
+	addButton: (button) =>
+		@buttons.push(button)
+		pad = (cfg.toolbar.height - cfg.icon.height) / 2
+		y = pad
+		x = cfg.margin + @title.getBBox().width + cfg.margin
+		x += (cfg.icon.height + 2 * pad) * (@buttons.length - 1)
+		button.update(x, y)
+	setTitle: (title) ->
+		@title.update
+			text: title
+		@update()
+
+class @LSC.Button
+	constructor: (icon, @tooltip, @toolbar) ->
+		@icon = @toolbar.paper.path(Icons[icon])
+		@icon.attr
+			fill: "#777"
+			stroke:"#fff"
+			"stroke-opacity": 0
+		sf = cfg.icon.height / @icon.getBBox().height
+		@icon.scale(sf, sf, 0, 0)
+		@rect = @toolbar.paper.rect(0, 0, @icon.getBBox().width, cfg.icon.height)
+		@rect.attr
+			fill: "#fff"
+			opacity: 0
+			title: @tooltip
+			cursor: "pointer"
+		@rect.hover(@hoverIn, @hoverOut)
+		@toolbar.addButton(@)
+	update: (x,y) ->
+		#Translate position iteratively :(
+		@icon.translate(x - @icon.getBBox().x, y - @icon.getBBox().y)
+		@icon.translate(x - @icon.getBBox().x, y - @icon.getBBox().y)
+		@icon.translate(x - @icon.getBBox().x, y - @icon.getBBox().y)
+		@icon.translate(x - @icon.getBBox().x, y - @icon.getBBox().y)
+		@icon.translate(x - @icon.getBBox().x, y - @icon.getBBox().y)
+		@rect.attr
+			x: x
+			y: y
+	hoverIn: =>
+		@icon.stop().animate
+				fill: "#333"
+				"stroke-opacity": 1
+			, 100
+	hoverOut: =>
+		@icon.stop().animate
+				fill: "#777"
+				"stroke-opacity": 0
+			, 200
+	click: (action) => 
+		@rect.click action
