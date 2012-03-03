@@ -129,6 +129,7 @@ class @LSC.Message
 				opacity: 1
 			@editor.remove()
 			@editor = null
+	toJSON: => name: @name, location: @location, source: @source.number, target: @target.number
 
 class @LSC.InstanceLine
 	constructor: (@name, @number, @paper, @lsc) ->
@@ -219,12 +220,12 @@ class @LSC.InstanceLine
 		@selected = false
 		@head.update
 			"fill-opacity":	0
+	toJSON: => name: @name, number: @number
 
 class @LSC.LiveSequenceChart
 	constructor: (@name, @paper, @x = 0, @y = cfg.toolbar.height) ->
 		@messages = []
 		@instances = []
-		@conditions = []
 		@lineloc = 1			#Location between pre- and postchart
 		@locations = 2			#number of locations in chart
 		@prechart = @paper.path("")
@@ -317,6 +318,17 @@ class @LSC.LiveSequenceChart
 	clearSelection: =>
 		m.unselect() for m in @messages when m.selected
 		i.unselect() for i in @instances when i.selected
+	toJSON: =>
+			name:			"Untitled Chart"
+			lineloc:		@lineloc
+			locations:		@locations
+			instances:		(i.toJSON() for i in @instances)
+			messages:		(m.toJSON() for m in @messages)
+	fromJSON: (json) =>
+		@clear()	#TODO: Make method for deleting everything!
+		#TODO: Load data form json
+	serialize: => $.toJSON(@toJSON())
+	deserialize: (data) => @fromJSON($.secureEvalJSON(data))
 
 class @LSC.Toolbar
 	constructor: (@paper) ->
@@ -383,7 +395,7 @@ class @LSC.Button
 	click: (action) => 
 		@rect.click action
 
-@LSC.initialize = =>	# Initialize everything
+@LSC.initialize = (paper) =>	# Initialize everything
 	@Raphael.el.update = (params) -> @animate params, cfg.animation.speed
 	@Raphael.el.moveTo = (x, y) ->
 			if @type == "path"
@@ -395,9 +407,7 @@ class @LSC.Button
 				@translate(x - @getBBox().x, y - @getBBox().y)
 			else
 				return this.attr({x: x, y: y});
-	paper = @Raphael(0, 0, "100%", "100%")
 	@scene = paper.rect(0,0,"100%","100%")
 	@scene.attr
 		fill: 		"#fff"
 		stroke:		"none"
-	return paper
