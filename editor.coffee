@@ -1,4 +1,4 @@
-cfg =
+@cfg =
 	margin:					10
 	instance:
 		head:
@@ -27,9 +27,11 @@ cfg =
 		selected:			0.6
 		hover:				0.2
 # Computed keys
-cfg.instance.width = cfg.instance.head.width + cfg.instance.padding * 2
+@cfg.instance.width = @cfg.instance.head.width + @cfg.instance.padding * 2
 
-@LSC = {}
+@LSC ?= {}
+
+
 
 class @LSC.Message
 	constructor: (@name, @source, @target, @location, @lsc) ->
@@ -130,6 +132,10 @@ class @LSC.Message
 			@editor.remove()
 			@editor = null
 	toJSON: => name: @name, location: @location, source: @source.number, target: @target.number
+	remove: =>
+		@text.remove()
+		@rect.remove()
+		@arrow.remove()
 
 class @LSC.InstanceLine
 	constructor: (@name, @number, @paper, @lsc) ->
@@ -171,7 +177,6 @@ class @LSC.InstanceLine
 			y: 	y + cfg.instance.head.height + lh
 			width: 		cfg.instance.foot.width
 			height: 	cfg.instance.foot.height
-
 	drag: (x, y, event) => 			#Start drag
 		@select()
 	move: (dx, dy, x, y, event) => 	#Move (during drag)
@@ -221,6 +226,12 @@ class @LSC.InstanceLine
 		@head.update
 			"fill-opacity":	0
 	toJSON: => name: @name, number: @number
+	remove: =>
+		@head.remove()
+		@line.remove()
+		@foot.remove()
+		@text.remove()
+
 
 class @LSC.LiveSequenceChart
 	constructor: (@name, @paper, @x = 0, @y = cfg.toolbar.height) ->
@@ -318,6 +329,26 @@ class @LSC.LiveSequenceChart
 	clearSelection: =>
 		m.unselect() for m in @messages when m.selected
 		i.unselect() for i in @instances when i.selected
+	deleteMessage: (m) =>
+		for msg in @messages when msg.location > m.location
+			msg.location -= 1
+		@messages = (msg for msg in @messages when msg != m)
+		m.remove()
+		@lineloc -= 1 if m.location < @lineloc
+		@locations -= 1
+		delete m
+	deleteInstance: (i) =>
+		for inst in @instances when inst.number > i.number
+			inst.number -= 1
+		@instances = (inst for inst in @instances when inst != i)
+		i.remove()
+		for m in @messages when m.source == i or m.target == i
+			@deleteMessage(m)
+		delete i
+	deleteSelection: =>
+		@deleteMessage(m) for m in @messages when m.selected
+		@deleteInstance(i) for i in @instances when i.selected
+		@update()
 	toJSON: =>
 			name:			"Untitled Chart"
 			lineloc:		@lineloc
@@ -325,10 +356,12 @@ class @LSC.LiveSequenceChart
 			instances:		(i.toJSON() for i in @instances)
 			messages:		(m.toJSON() for m in @messages)
 	fromJSON: (json) =>
-		@clear()	#TODO: Make method for deleting everything!
 		#TODO: Load data form json
 	serialize: => $.toJSON(@toJSON())
 	deserialize: (data) => @fromJSON($.secureEvalJSON(data))
+
+class @LSC.Document
+#TODO: Implement this...
 
 class @LSC.Toolbar
 	constructor: (@paper) ->
@@ -336,7 +369,6 @@ class @LSC.Toolbar
 		@bg = @paper.rect(0, 0, "100%", cfg.toolbar.height)
 		@bg.attr
 			fill:"#aaa"
-			#"fill": [90,"#ccc","#fff"].join("-")
 			"stroke":"none"
 		@paper.rect(0, cfg.toolbar.height, "100%", 1).attr({stroke: "none", fill: "#999"})
 		#filename
@@ -395,6 +427,7 @@ class @LSC.Button
 	click: (action) => 
 		@rect.click action
 
+
 @LSC.initialize = (paper) =>	# Initialize everything
 	@Raphael.el.update = (params) -> @animate params, cfg.animation.speed
 	@Raphael.el.moveTo = (x, y) ->
@@ -411,3 +444,5 @@ class @LSC.Button
 	@scene.attr
 		fill: 		"#fff"
 		stroke:		"none"
+
+
