@@ -125,6 +125,7 @@ class @LSC.Message
 				@unedit() if event.keyCode == 13
 	unedit: (event) =>				#End edit
 		if @editor?
+			return if @editor.val() == ""
 			@name = @editor.val()
 			@text.attr
 				text: @name
@@ -137,7 +138,7 @@ class @LSC.Message
 		@rect.remove()
 		@arrow.remove()
 
-class @LSC.InstanceLine
+class @LSC.Instance
 	constructor: (@name, @number, @paper, @lsc) ->
 		@selected = false
 		@head = @paper.rect(0,0,0,0)
@@ -201,6 +202,7 @@ class @LSC.InstanceLine
 				@unedit() if event.keyCode == 13
 	unedit: (event) =>				#End name edit
 		if @editor?
+			return if @editor.val() == ""
 			@name = @editor.val()
 			@text.attr
 				text: @name
@@ -233,7 +235,7 @@ class @LSC.InstanceLine
 		@text.remove()
 
 
-class @LSC.LiveSequenceChart
+class @LSC.Chart
 	constructor: (@name, @paper, @x = 0, @y = cfg.toolbar.height) ->
 		@messages = []
 		@instances = []
@@ -244,7 +246,6 @@ class @LSC.LiveSequenceChart
 			"stroke-dasharray": "--"
 		@postchart = @paper.path("")
 		@update()
-		scene.click(@clearSelection)
 	update: =>
 		width = Math.max(cfg.instance.width * @instances.length, cfg.chart.minwidth)
 		preheight = cfg.instance.head.height + cfg.margin + cfg.location.height * @lineloc
@@ -292,6 +293,16 @@ class @LSC.LiveSequenceChart
 		message.location = @locations
 		message.paper = @paper
 		@locations = @locations + 1
+	createMessage: (sourceNumber, targetNumber, location, name) =>
+		target = i for i in @instances when i.number == targetNumber
+		source = i for i in @instances when i.number == sourceNumber
+		m = new LSC.Message(name, source, target, location, @)
+		msg.location += 1 for msg in @messages when msg.location >= location
+		@lineloc += 1 if @lineloc >= location
+		@messages.push m
+		@locations = @locations + 1
+		@update()
+		m.edit()
 	numberX: (number) =>	#Given instance number, get x-value
 		offset = cfg.prechart.padding + cfg.margin + cfg.instance.width / 2
 		return @x + offset + (number * cfg.instance.width)
@@ -375,11 +386,13 @@ class @LSC.Toolbar
 		@title = @paper.text(cfg.margin, cfg.toolbar.height / 2, "Untitled.lsc")
 		.attr({"text-anchor":"start",font:"Verdana","font-weight":"bold"})
 		@buttons = []
+		@title.click(@edit)
+		@title.hover(@hoverIn, @hoverOut)
 	update: =>
-		pad = (cfg.toolbar.height - cfg.icon.size) / 2
+		pad = (cfg.toolbar.height - cfg.icon.height) / 2
 		x = y = pad
 		x += @title.getBBox().width + pad
-		for icon in @icons
+		for icon in @buttons
 			icon.update(x, y)
 			x += icon.rect.getBBox().width + 2 * pad
 	addButton: (button) =>
@@ -389,8 +402,45 @@ class @LSC.Toolbar
 		x = cfg.margin + @title.getBBox().width + cfg.margin
 		x += (cfg.icon.height + 2 * pad) * (@buttons.length - 1)
 		button.update(x, y)
-	setTitle: (title) ->
-		@title.update
+
+	edit: (event) =>				#Edit name
+			unless @editor?
+				@editor = $("<input type='text'/>")
+				@editor.css
+					left:			cfg.margin
+					top:			cfg.margin+2
+					width:			@title.getBBox().width
+					background:		"#ccc"
+					height:			12
+				@editor.addClass("editor")
+				$("body").append(@editor)
+				text = @title.attr("text")
+				@title.attr
+					text: ""
+					opacity: 0
+				@editor.val(text).focus().select().blur(@unedit).keypress (event) =>
+					@unedit() if event.keyCode == 13
+
+	unedit: (event) =>				#End edit
+		if @editor?
+			name = @editor.val()
+			return if name == ""
+			@title.attr
+				text: name
+				opacity: 1
+			@editor.remove()
+			@editor = null
+		@update()
+	hoverIn: =>
+		@title.attr
+			cursor: "text"
+			opacity: 0.5
+	hoverOut: =>
+		@title.attr
+			cursor: "arrow"
+			opacity: 1
+	setTitle: (title) =>
+		@title.attr
 			text: title
 		@update()
 
@@ -417,7 +467,7 @@ class @LSC.Button
 	hoverIn: =>
 		@icon.stop().animate
 				fill: "#333"
-				"stroke-opacity": 1
+				"stroke-opacity": 0	#1
 			, 100
 	hoverOut: =>
 		@icon.stop().animate
@@ -443,6 +493,7 @@ class @LSC.Button
 	@scene = paper.rect(0,0,"100%","100%")
 	@scene.attr
 		fill: 		"#fff"
+		opacity:	0
 		stroke:		"none"
 
 

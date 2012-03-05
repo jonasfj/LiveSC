@@ -1,6 +1,7 @@
 body{
-	font-size: 75%;
-	font-family: "Trebuchet MS", "Helvetica", "Arial",  "Verdana", sans-serif;
+	font-size:		75%;
+	font-family:	"Trebuchet MS", "Helvetica", "Arial",  "Verdana", sans-serif;
+	margin:			0px;
 }
 
 input.editor{
@@ -21,4 +22,17 @@ svg{
 	-o-user-select: none;
 	-ie-user-select:none;
 	user-select: none;
+}
+
+#chartlist{
+	background:		yellow;
+	height:			100px;
+	width:			250px;
+	display:		none;
+}
+
+#workspace{
+	background: 	brown;
+	height:			100px;
+	display:		none;
 }
