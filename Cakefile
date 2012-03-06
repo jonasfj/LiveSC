@@ -23,7 +23,7 @@ task "watch", "Rebuild when files are changed", ->
 task "docs", "Generate source code documentation", ->
 	fs.readdir "src", (error, contents) ->
 		files = ("src/#{file}" for file in contents when /\.coffee$/.test(file))
-		docco = spawn "coffeedoc", files
+		docco = spawn "docco", files
 		docco.stdout.on "data", (data) -> print data.toString()
 		docco.stderr.on "data", (data) -> print data.toString()
 		docco.on "exit", (status) ->

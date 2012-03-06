@@ -1,3 +1,7 @@
+#### Editor Configuration
+# Various constants used in the editor, padding and difference sizes, etc.
+# Don't mess with these, most of them are more like constants than configuration
+# settings.
 @cfg =
 	margin:					10
 	instance:
@@ -26,13 +30,15 @@
 	opacity:
 		selected:			0.6
 		hover:				0.2
-# Computed keys
+
+# Automatically computed contants
 @cfg.instance.width = @cfg.instance.head.width + @cfg.instance.padding * 2
 
+# LSC namespace if not already there
 @LSC ?= {}
 
-class @LSC.Document
 #TODO: Implement this...
+class @LSC.Document
 
 class @LSC.Toolbar
 	constructor: (@paper) ->
