@@ -165,7 +165,7 @@ class @LSC.Button
 
 
 $ =>
-	@paper = @Raphael(0, 0, "100%", "100%")
+	@paper = @Raphael(0,0,"100%", "100%")
 	@LSC.initialize(@paper)
 	@log = (msg) => $("#log").append(msg + "<br>")
 	@inspect = (object) =>
@@ -181,6 +181,22 @@ $ =>
 		lsc.addInstance(i)
 		lsc.update()
 		i.edit()
+	
+	dragOver = (event) =>
+		event.stopPropagation()
+		event.preventDefault()
+		event.dataTransfer.dropEffect = 'copy'
+	
+	dropFile = (event) =>
+		event.stopPropagation()
+		event.preventDefault()
+		files = event.dataTransfer.files
+		for f in files
+			alert(escape(f.name))
+
+	# handle file loading
+	$("body").on("dragover", dragOver)
+	$("body").on("drop", dropFile)
 	
 	download = =>
 		data = lsc.serialize()
