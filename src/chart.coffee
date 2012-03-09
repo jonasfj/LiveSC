@@ -29,12 +29,21 @@ class @LSC.Chart
 					 h #{width} v #{postheight} h -#{width} z"""
 		#redraw instances
 		for instance in @instances
-			yi = @y + 2 * cfg.margin
+			yi = @y + 2 * cfg.margin			# Why is there an y here???
 			hi = preheight + postheight - cfg.margin * 2
 			instance.update(@numberX(instance.number), yi, hi)
 		#redraw messages
 		for message in @messages
 			message.update(@locationY(message.location))
+		height = @y + cfg.margin + preheight + postheight + cfg.margin
+		@updateSize(@x + 2 * (cfg.margin + cfg.prechart.padding) + width, height)
+	#Update paper size for this chart
+	updateSize: (width, height) =>
+		# Only update width and height if necessary
+		if width != @width or height != @height
+			@width = width
+			@height = height
+			@paper.setSize(width, height)
 	#moves an instance line
 	moveInstance: (instance, number) =>
 		prev = instance.number

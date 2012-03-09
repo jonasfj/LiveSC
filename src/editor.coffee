@@ -165,7 +165,7 @@ class @LSC.Button
 
 #### Initialize the editor
 $ =>
-	@paper = @Raphael("wrapper", "100%", "100%")
+	@paper = @Raphael("workspace", "400", "400")
 	@LSC.initialize(@paper)
 	@log = (msg) => $("#log").append(msg + "<br>")
 	@inspect = (object) =>
@@ -173,7 +173,7 @@ $ =>
 		for key, value of object
 			str += "#{key}: \"#{value}\", "
 		return str + "}"
-	toolbar = new @LSC.Toolbar(@paper)
+
 	lsc = new @LSC.Chart("Untitled.lsc", @paper)
 
 	addInstance = =>
@@ -236,6 +236,8 @@ $ =>
 				num1 = num
 				loc1 = loc
 
+	#### Initialize toolbar
+	toolbar = new @LSC.Toolbar(@Raphael("toolbar", "100%", cfg.toolbar.height))
 	new @LSC.Button("plus", "Add instance", toolbar).click addInstance
 	new @LSC.Button("exchange", "Add message", toolbar).click addMessage
 	
