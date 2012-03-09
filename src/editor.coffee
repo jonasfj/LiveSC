@@ -163,9 +163,9 @@ class @LSC.Button
 		stroke:		"none"
 
 
-
+#### Initialize the editor
 $ =>
-	@paper = @Raphael(0,0,"100%", "100%")
+	@paper = @Raphael("wrapper", "100%", "100%")
 	@LSC.initialize(@paper)
 	@log = (msg) => $("#log").append(msg + "<br>")
 	@inspect = (object) =>
@@ -182,22 +182,28 @@ $ =>
 		lsc.update()
 		i.edit()
 	
-	dragOver = (event) =>
-		event.stopPropagation()
-		event.preventDefault()
+	#### jQuery Hack
+	# Add dataTransfer to copied attributed for events
+	# See: http://weblog.bocoup.com/using-datatransfer-with-jquery-events/
+	jQuery.event.props.push('dataTransfer');
+
+	#### File drop support (for loading files)
+	# Set dropEffect and display cloudUp icon large
+	# if a file is being draged
+	#TODO: Try dragenter and dragleave (other something like it) instead
+	$("#wrapper").on "dragover", (event) ->
+		event.stopPropagation()	#Don't do this is not handled here!
+		event.preventDefault()	#Ie. if it's not a file
+		#TODO Check if dataTransfer.files is defined, and if it's non-empty
 		event.dataTransfer.dropEffect = 'copy'
-	
-	dropFile = (event) =>
-		event.stopPropagation()
-		event.preventDefault()
+	# Handle file loading if it's a file
+	$("#wrapper").on "drop", (event) ->
+		event.stopPropagation()	#Don't do this is not handled here!
+		event.preventDefault()	#Ie. if it's not a file
 		files = event.dataTransfer.files
 		for f in files
 			alert(escape(f.name))
 
-	# handle file loading
-	$("body").on("dragover", dragOver)
-	$("body").on("drop", dropFile)
-	
 	download = =>
 		data = lsc.serialize()
 		dataurl = "data:application/lsc+json;base64,#{$.base64Encode(data)}"
@@ -263,4 +269,6 @@ $ =>
 	m = new @LSC.Message("test", i2, i1, 0, lsc)
 	lsc.addMessage(m)
 	lsc.update()
+
+
 
