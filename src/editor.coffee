@@ -40,7 +40,8 @@
 #TODO: Implement this...
 class @LSC.Document
 
-@LSC.initialize = (paper) =>	# Initialize everything
+# Initialize everything
+@LSC.initialize = (paper) =>
 	@Raphael.el.update = (params) -> @animate params, cfg.animation.speed
 	@Raphael.el.moveTo = (x, y) ->
 			if @type == "path"
@@ -68,7 +69,12 @@ $ =>
 	
 	@paper = @Raphael("workspace", "400", "400")
 	@LSC.initialize(@paper)
-	@log = (msg) => $("#log").append(msg + "<br>")
+	@log = (msg) =>
+		if console?.log?
+			console.log msg
+		else
+			alert "Provide console.log for log messages"
+			@log = (msg) ->
 	@inspect = (object) =>
 		str = "{"
 		for key, value of object
@@ -137,12 +143,16 @@ $ =>
 				num1 = num
 				loc1 = loc
 
+	deleteSelection = (event) ->
+		lsc.deleteSelection
+ 	
+
 	#### Initialize toolbar
 	toolbar = new @LSC.Toolbar(@Raphael("toolbar", "100%", cfg.toolbar.height))
 	new @LSC.Button("plus", "Add instance", toolbar).click addInstance
 	new @LSC.Button("exchange", "Add message", toolbar).click addMessage
 	
-	new @LSC.Button("trash", "Delete selection", toolbar).click lsc.deleteSelection
+	new @LSC.Button("trash", "Delete selection", toolbar).click deleteSelection
 	new @LSC.Button("cloudDown", "Download LSC", toolbar).click download
 	
 	i0 = new @LSC.Instance("I/O", 0, @paper, lsc)

@@ -101,5 +101,5 @@ class @LSC.Button
 				fill: "#777"
 				"stroke-opacity": 0
 			, 200
-	click: (action) => 
+	click: (action) =>
 		@rect.click action
