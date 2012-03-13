@@ -1,8 +1,13 @@
+html{
+	height: 		100%;
+}
+
 body{
 	margin:			0px;
 	padding:		0px;
 	font-size:		75%;
 	font-family:	"Trebuchet MS", "Helvetica", "Arial",  "Verdana", sans-serif;
+	overflow:		hidden;
 }
 
 input.editor{
@@ -36,10 +41,9 @@ svg{
 }
 
 #workspace{
-	background: 	brown;
 	margin-left:	250px;
 	overflow:		auto;
-	height:			99%;
+	border-left:	1px solid #000;
 }
 
 div.wrapright{
@@ -51,6 +55,5 @@ div.wrapright{
 	float:			left;
 	width:			250px;
 	margin-left:	-100%;
-	background:		yellow;
 	height:			100px;
 }

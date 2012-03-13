@@ -162,9 +162,14 @@ class @LSC.Button
 		opacity:	0
 		stroke:		"none"
 
+@CurrentChart = null
 
 #### Initialize the editor
 $ =>
+	$(window).resize ->
+		$("#workspace").height($(window).height() - cfg.toolbar.height)
+	$(window).resize()
+	
 	@paper = @Raphael("workspace", "400", "400")
 	@LSC.initialize(@paper)
 	@log = (msg) => $("#log").append(msg + "<br>")
