@@ -65,7 +65,7 @@ class @LSC.Message
 	drag: (x, y, event) => 			#Start drag
 		@select()
 	move: (dx, dy, x, y, event) => 	#Move (during drag)
-		dst = @lsc.GetLocation(y)
+		dst = @lsc.GetLocation(LSC.pageY2RaphaelY(y))
 		if dst != @location
 			@lsc.moveMessage(@, dst)
 	drop: (event) => 				#End drag

@@ -43,7 +43,7 @@ class @LSC.Instance
 	drag: (x, y, event) => 			#Start drag
 		@select()
 	move: (dx, dy, x, y, event) => 	#Move (during drag)
-		dst = @lsc.xNumber(x)
+		dst = @lsc.xNumber(LSC.pageX2RaphaelX(x))
 		if dst != @number
 			@lsc.moveInstance(@, dst)
 	drop: (event) => 				#End drag

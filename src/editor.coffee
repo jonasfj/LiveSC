@@ -61,6 +61,11 @@ class @LSC.Document
 
 @CurrentChart = null
 
+# Convert PageX, PageY to raphael coordinates
+@LSC.pageX2RaphaelX = (x) -> x + $("#workspace").scrollLeft() - $("#workspace").offset().left;
+@LSC.pageY2RaphaelY = (y) -> y + $("#workspace").scrollTop() - $("#workspace").offset().top;
+
+
 #### Initialize the editor
 $ =>
 	$(window).resize ->
