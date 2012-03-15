@@ -56,7 +56,7 @@ class @LSC.Instance
 				width:			cfg.instance.head.width - cfg.margin
 				height:			cfg.instance.head.height - cfg.margin
 			@editor.addClass("editor")
-			$("body").append(@editor)
+			@editor.appendTo("#workspace")
 			@text.attr
 				text: ""
 				opacity: 0

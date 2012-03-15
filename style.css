@@ -41,6 +41,7 @@ svg{
 }
 
 #workspace{
+	position:		relative;
 	margin-left:	250px;
 	overflow:		auto;
 	border-left:	1px solid #000;

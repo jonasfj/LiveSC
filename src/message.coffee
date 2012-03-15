@@ -84,7 +84,7 @@ class @LSC.Message
 				width:			cfg.instance.width - cfg.arrow.width * 2
 				height:			12
 			@editor.addClass("editor")
-			$("body").append(@editor)
+			@editor.appendTo("#workspace")
 			@text.attr
 				text: ""
 				opacity: 0
