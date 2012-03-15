@@ -1,10 +1,9 @@
 fs				= require "fs"
 {print}			= require "util"
 {spawn, exec}	= require "child_process"
-{platform}		= require "process"
 
 coffee = "coffee"
-coffee = "coffee.cmd"		if platform is "win32"
+coffee = "coffee.cmd"		if process.platform is "win32"
 
 build = (watch = false) ->
 	options = ["-c", "-o", "bin", "src"]
