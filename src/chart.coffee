@@ -10,6 +10,17 @@ class @LSC.Chart
 		@prechart.attr
 			"stroke-dasharray": "--"
 		@postchart = @paper.path("")
+		# Create Scene (phase this later out if possible)
+		@isAddingMessage = false
+		@smd_num = @smd_loc = null
+		@scene = paper.rect(0, 0, "100%", "100%")
+		@scene.attr
+			fill: 		"#fff"
+			opacity:	0
+			stroke:		"none"
+		@scene.click @clearSelection
+		@scene.mousedown @sceneMouseDown
+		@scene.mouseup @sceneMouseUp
 		@update()
 	update: =>
 		width = Math.max(cfg.instance.width * @instances.length, cfg.chart.minwidth)
@@ -57,16 +68,28 @@ class @LSC.Chart
 					i.number += 1
 		instance.number = number
 		@update()
-	addInstance: (instance) =>
-		@instances.push(instance)
-		instance.number = @instances.length - 1
-		instance.paper = @paper
-		instance.lsc = @
-	addMessage: (message) =>
-		@messages.push(message)
-		message.location = @locations
-		message.paper = @paper
-		@locations = @locations + 1
+	addMessage: =>
+		@isAddingMessage = true
+		@scene.toFront()
+		@scene.attr
+			cursor:		"crosshair"
+		@smd_num = @smd_loc = null
+	sceneMouseDown: (event) =>
+		if @isAddingMessage
+			@smd_num = @xNumber(LSC.pageX2RaphaelX(event.pageX))
+			@smd_loc = @GetLocation(LSC.pageY2RaphaelY(event.pageY))
+	sceneMouseUp: (event) =>
+		if @isAddingMessage
+			num = @xNumber(LSC.pageX2RaphaelX(event.pageX))
+			loc = @GetLocation(LSC.pageY2RaphaelY(event.pageY))
+			if @smd_num? and @smd_loc?
+				if @smd_num != num
+					@createMessage(@smd_num, num, Math.round((@smd_loc + loc) / 2), "msg()")
+				@smd_num = @smd_loc = null
+				isAddingMessage = false
+				@scene.toBack()
+				@scene.attr
+					cursor:		"default"
 	createMessage: (sourceNumber, targetNumber, location, name) =>
 		target = i for i in @instances when i.number == targetNumber
 		source = i for i in @instances when i.number == sourceNumber
@@ -77,6 +100,11 @@ class @LSC.Chart
 		@locations = @locations + 1
 		@update()
 		m.edit()
+	createInstance: =>
+		i = new LSC.Instance("New instance", @instances.length, @paper, @)
+		@instances.push(i)
+		@update()
+		i.edit()
 	numberX: (number) =>	#Given instance number, get x-value
 		offset = cfg.prechart.padding + cfg.margin + cfg.instance.width / 2
 		return @x + offset + (number * cfg.instance.width)
@@ -140,8 +168,23 @@ class @LSC.Chart
 			locations:		@locations
 			instances:		(i.toJSON() for i in @instances)
 			messages:		(m.toJSON() for m in @messages)
+	@emptyJSON:
+		name: "Untitled Chart"
+		lineloc:			1
+		locations:			2
+		instances:			[]
+		messages:			[]
 	fromJSON: (json) =>
-		#TODO: Load data form json
+		@name = json.name
+		@lineloc = json.lineloc
+		@locations = json.locations
+		for inst in json.instances
+			@instances.push new LSC.Instance(inst.name, inst.number, @paper, @)
+		for msg in json.messages
+			for i in @instances
+				source = i		if i.number == msg.source
+				target = i		if i.number == msg.target
+			@messages.push new LSC.Message(msg.name, source, target, msg.location, @)
 	serialize: => $.toJSON(@toJSON())
 	deserialize: (data) => @fromJSON($.secureEvalJSON(data))
 
