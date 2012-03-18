@@ -44,7 +44,8 @@ class @LSC.Message
 		@selected = false
 		@rect.update
 			opacity: 0
-	update: (@y) =>
+	update: =>
+		y = @lsc.locationY(@location)
 		xs = @source.x
 		xt = @target.x
 		ar_w = cfg.arrow.width
@@ -83,7 +84,7 @@ class @LSC.Message
 			@editor = $("<input type='text'/>")
 			@editor.css
 				left:			x
-				top:			@y - cfg.margin - 10
+				top:			@lsc.locationY(@location) - cfg.margin - 10
 				width:			cfg.instance.width - cfg.arrow.width * 2
 				height:			12
 			@editor.addClass("editor")

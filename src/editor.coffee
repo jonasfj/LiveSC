@@ -100,6 +100,7 @@
 	# Please remember to `stopPropagation()` on any mousedown and mouseup events
 	# that shouldn't cause deselection. Ie. this is relevant for editors and stuff.
 	$("#workspace")[0].addEventListener "mousedown",	((e) -> CurrentChart?.mouseDown(e)), 		true
+	$("#workspace")[0].addEventListener "mousemove", 	((e) -> CurrentChart?.mouseMove(e)), 		true
 	$("#workspace")[0].addEventListener "mouseup", 		((e) -> CurrentChart?.mouseUp(e)), 			true
 	$("#workspace")[0].addEventListener "mousedown", 	((e) -> CurrentChart?.clearSelection(e)), 	false
 	# Notice how `Chart.mouseDown(e)` will `stopPropagation()` when adding message, but otherwise

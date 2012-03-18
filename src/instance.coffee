@@ -22,7 +22,8 @@ class @LSC.Instance
 		@foot.attr
 			"fill":	"black"
 		@width = cfg.instance.width
-	update: (@x, @y, height) =>
+	update: (@y, height) =>
+		x = @lsc.numberX(@number)
 		pad = cfg.instance.padding
 		@head.update
 			x: 			x - cfg.instance.head.width / 2
@@ -52,7 +53,7 @@ class @LSC.Instance
 		unless @editor?
 			@editor = $("<input type='text'/>")
 			@editor.css
-				left:			@x - cfg.instance.head.width / 2 + cfg.margin / 2
+				left:			@lsc.numberX(@number) - cfg.instance.head.width / 2 + cfg.margin / 2
 				top:			@y + cfg.margin / 2
 				width:			cfg.instance.head.width - cfg.margin
 				height:			cfg.instance.head.height - cfg.margin

@@ -11,7 +11,7 @@ class @LSC.Chart
 			"stroke-dasharray": "--"
 		@postchart = @paper.path("")
 		@isAddingMessage = false
-		@smd_num = @smd_loc = null
+		@addingM = null
 		@update()
 		$("#workspace").css("cursor", "default")
 	update: =>
@@ -34,10 +34,10 @@ class @LSC.Chart
 		for instance in @instances
 			yi = @y + 2 * cfg.margin			# Why is there an y here???
 			hi = preheight + postheight - cfg.margin * 2
-			instance.update(@numberX(instance.number), yi, hi)
+			instance.update(yi, hi)
 		#redraw messages
 		for message in @messages
-			message.update(@locationY(message.location))
+			message.update()
 		height = @y + cfg.margin + preheight + postheight + cfg.margin
 		@updateSize(@x + 2 * (cfg.margin + cfg.prechart.padding) + width, height)
 	#Update paper size for this chart
@@ -61,26 +61,56 @@ class @LSC.Chart
 		instance.number = number
 		@update()
 	addMessage: =>
-		@isAddingMessage = true
-		$("#workspace").css("cursor", "crosshair")
-		@smd_num = @smd_loc = null
+		if @instances.length > 1
+			@isAddingMessage = true
+			$("#workspace").css("cursor", "crosshair")
+			@addingM = null
 	mouseDown: (event) =>
 		if @isAddingMessage
 			event.stopPropagation()
-			@smd_num = @xNumber(LSC.pageX2RaphaelX(event.pageX))
-			@smd_loc = @GetLocation(LSC.pageY2RaphaelY(event.pageY))
+			x = LSC.pageX2RaphaelX(event.pageX)
+			s_num = @xNumber(x)
+			if @numberX(s_num) > x
+				t_num = s_num - 1
+				t_num = 1 if t_num < 0
+			else
+				t_num = s_num + 1
+				t_num = s_num - 1 if t_num >= @instances.length
+			loc = @GetLocation(LSC.pageY2RaphaelY(event.pageY))
+			@addingM = @createMessage(s_num, t_num, loc, "msg()", false)
+	mouseMove: (event) =>
+		if isNaN event.pageY
+			log "pis"
+		if isNaN event.pageX
+			log "pis!"
+		if @isAddingMessage and @addingM?
+			event.stopPropagation()
+			x = LSC.pageX2RaphaelX(event.pageX)
+			t_num = @xNumber(x)
+			loc = @GetLocation(LSC.pageY2RaphaelY(event.pageY))
+			if t_num == @addingM.source.number
+				s_num = @addingM.source.number
+				if @numberX(s_num) > x
+					t_num = s_num - 1
+					t_num = 1 if t_num < 0
+				else
+					t_num = s_num + 1
+					t_num = s_num - 1 if t_num >= @instances.length
+			target = i for i in @instances when i.number == t_num
+			if @addingM.target != target or loc != @addingM.location
+				@addingM.target = target
+				if loc != @addingM.location
+					@moveMessage(@addingM, loc)
+				else
+					@addingM.update()
 	mouseUp: (event) =>
 		if @isAddingMessage
+			@mouseMove(event)
 			@isAddingMessage = false
 			$("#workspace").css("cursor", "default")
-			event.stopPropagation()
-			num = @xNumber(LSC.pageX2RaphaelX(event.pageX))
-			loc = @GetLocation(LSC.pageY2RaphaelY(event.pageY))
-			if @smd_num? and @smd_loc?
-				if @smd_num != num
-					@createMessage(@smd_num, num, Math.round((@smd_loc + loc) / 2), "msg()")
-				@smd_num = @smd_loc = null
-	createMessage: (sourceNumber, targetNumber, location, name) =>
+			@addingM.edit()
+			@addingM = null
+	createMessage: (sourceNumber, targetNumber, location, name, edit = true) =>
 		target = i for i in @instances when i.number == targetNumber
 		source = i for i in @instances when i.number == sourceNumber
 		m = new LSC.Message(name, source, target, location, @)
@@ -89,7 +119,8 @@ class @LSC.Chart
 		@messages.push m
 		@locations = @locations + 1
 		@update()
-		m.edit()
+		m.edit()		if edit
+		return m
 	createInstance: =>
 		i = new LSC.Instance("New instance", @instances.length, @paper, @)
 		@instances.push(i)
