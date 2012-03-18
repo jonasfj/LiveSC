@@ -21,6 +21,9 @@ class @LSC.Message
 		@arrow.drag(@move, @drag, @drop)
 		@rect.drag(@move, @drag, @drop)
 		@text.drag(@move, @drag, @drop)
+		@text.mousedown(@select)
+		@rect.mousedown(@select)
+		@arrow.mousedown(@select)
 		@text.dblclick(@edit)
 	hoverIn: =>
 		unless @selected
@@ -30,7 +33,8 @@ class @LSC.Message
 		unless @selected
 			@rect.update
 				opacity: 0
-	select: =>
+	select: (event) =>
+		event?.stopPropagation?()
 		unless @selected
 			@lsc.clearSelection()
 			@selected = true
@@ -63,7 +67,6 @@ class @LSC.Message
 			width: Math.abs(xs - xt) + 2 * cfg.margin
 			height: cfg.location.height - cfg.margin
 	drag: (x, y, event) => 			#Start drag
-		@select()
 	move: (dx, dy, x, y, event) => 	#Move (during drag)
 		dst = @lsc.GetLocation(LSC.pageY2RaphaelY(y))
 		if dst != @location
@@ -88,6 +91,7 @@ class @LSC.Message
 			@text.attr
 				text: ""
 				opacity: 0
+			@editor.mousedown (e) -> e.stopPropagation()
 			@editor.val(@name).focus().select().blur(@unedit).keypress (event) =>
 				@unedit() if event.keyCode == 13
 	unedit: (event) =>				#End edit

@@ -10,18 +10,10 @@ class @LSC.Chart
 		@prechart.attr
 			"stroke-dasharray": "--"
 		@postchart = @paper.path("")
-		# Create Scene (phase this later out if possible)
 		@isAddingMessage = false
 		@smd_num = @smd_loc = null
-		@scene = paper.rect(0, 0, "100%", "100%")
-		@scene.attr
-			fill: 		"#fff"
-			opacity:	0
-			stroke:		"none"
-		@scene.click @clearSelection
-		@scene.mousedown @sceneMouseDown
-		@scene.mouseup @sceneMouseUp
 		@update()
+		$("#workspace").css("cursor", "default")
 	update: =>
 		width = Math.max(cfg.instance.width * @instances.length, cfg.chart.minwidth)
 		preheight = cfg.instance.head.height + cfg.margin + cfg.location.height * @lineloc
@@ -70,26 +62,24 @@ class @LSC.Chart
 		@update()
 	addMessage: =>
 		@isAddingMessage = true
-		@scene.toFront()
-		@scene.attr
-			cursor:		"crosshair"
+		$("#workspace").css("cursor", "crosshair")
 		@smd_num = @smd_loc = null
-	sceneMouseDown: (event) =>
+	mouseDown: (event) =>
 		if @isAddingMessage
+			event.stopPropagation()
 			@smd_num = @xNumber(LSC.pageX2RaphaelX(event.pageX))
 			@smd_loc = @GetLocation(LSC.pageY2RaphaelY(event.pageY))
-	sceneMouseUp: (event) =>
+	mouseUp: (event) =>
 		if @isAddingMessage
+			@isAddingMessage = false
+			$("#workspace").css("cursor", "default")
+			event.stopPropagation()
 			num = @xNumber(LSC.pageX2RaphaelX(event.pageX))
 			loc = @GetLocation(LSC.pageY2RaphaelY(event.pageY))
 			if @smd_num? and @smd_loc?
 				if @smd_num != num
 					@createMessage(@smd_num, num, Math.round((@smd_loc + loc) / 2), "msg()")
 				@smd_num = @smd_loc = null
-				isAddingMessage = false
-				@scene.toBack()
-				@scene.attr
-					cursor:		"default"
 	createMessage: (sourceNumber, targetNumber, location, name) =>
 		target = i for i in @instances when i.number == targetNumber
 		source = i for i in @instances when i.number == sourceNumber
@@ -139,9 +129,15 @@ class @LSC.Chart
 				@lineloc += 1
 		message.location = location
 		@update()
-	clearSelection: =>
-		m.unselect() for m in @messages when m.selected
-		i.unselect() for i in @instances when i.selected
+	clearSelection: (e) =>
+		deselected = false	# Stop event propergation if we deselected anything
+		for m in @messages when m.selected
+			m.unselect()
+			deselected = true
+		for i in @instances when i.selected
+			i.unselect()
+			deselected = true
+		e?.stopPropagation?()			if deselected
 	deleteMessage: (m) =>
 		for msg in @messages when msg.location > m.location
 			msg.location -= 1

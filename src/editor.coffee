@@ -95,6 +95,20 @@
 	$("body").on "dragover", 	dragFileOver
 	$("body").on "drop", 		dropFile
 
+	$("#workspace")[0].addEventListener "mousedown"
+		, (e) ->
+			CurrentChart?.clearSelection(e)
+		, false
+	$("#workspace")[0].addEventListener "mousedown"
+		, (e) ->
+			CurrentChart?.mouseDown(e)
+		, true
+	$("#workspace")[0].addEventListener "mouseup"
+		, (e) ->
+			CurrentChart?.mouseUp(e)
+		, true
+	
+
 	#### Initialize toolbar
 	@toolbar = new @LSC.Toolbar(@Raphael("toolbar", "100%", cfg.toolbar.height))
 	new @LSC.Button("piechart", "Add chart", toolbar).click 			addChart
