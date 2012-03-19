@@ -13,6 +13,8 @@ class @LSC.Instance
 		@text = @paper.text(0, 0, @name)
 		@head.dblclick(@edit)
 		@text.dblclick(@edit)
+		@head.mousedown(@select)
+		@text.mousedown(@select)
 		@line = @paper.path("")
 		@line.attr
 			"stroke-dasharray":	"-"
@@ -20,7 +22,8 @@ class @LSC.Instance
 		@foot.attr
 			"fill":	"black"
 		@width = cfg.instance.width
-	update: (@x, @y, height) =>
+	update: (@y, height) =>
+		x = @lsc.numberX(@number)
 		pad = cfg.instance.padding
 		@head.update
 			x: 			x - cfg.instance.head.width / 2
@@ -41,7 +44,6 @@ class @LSC.Instance
 			width: 		cfg.instance.foot.width
 			height: 	cfg.instance.foot.height
 	drag: (x, y, event) => 			#Start drag
-		@select()
 	move: (dx, dy, x, y, event) => 	#Move (during drag)
 		dst = @lsc.xNumber(LSC.pageX2RaphaelX(x))
 		if dst != @number
@@ -51,7 +53,7 @@ class @LSC.Instance
 		unless @editor?
 			@editor = $("<input type='text'/>")
 			@editor.css
-				left:			@x - cfg.instance.head.width / 2 + cfg.margin / 2
+				left:			@lsc.numberX(@number) - cfg.instance.head.width / 2 + cfg.margin / 2
 				top:			@y + cfg.margin / 2
 				width:			cfg.instance.head.width - cfg.margin
 				height:			cfg.instance.head.height - cfg.margin
@@ -60,6 +62,7 @@ class @LSC.Instance
 			@text.attr
 				text: ""
 				opacity: 0
+			@editor.mousedown (e) -> e.stopPropagation()
 			@editor.val(@name).focus().select().blur(@unedit).keypress (event) =>
 				@unedit() if event.keyCode == 13
 	unedit: (event) =>				#End name edit
@@ -79,7 +82,8 @@ class @LSC.Instance
 		unless @selected
 			@head.update
 				"fill-opacity":	0
-	select: =>
+	select: (event) =>
+		event?.stopPropagation?()
 		unless @selected
 			@lsc.clearSelection()
 			@selected = true

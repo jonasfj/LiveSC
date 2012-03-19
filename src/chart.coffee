@@ -10,6 +10,8 @@ class @LSC.Chart
 		@prechart.attr
 			"stroke-dasharray": "--"
 		@postchart = @paper.path("")
+		@isAddingMessage = false
+		@addingM = null
 		@title = @paper.text(10, 30, @name)
 		@title.width = "50%"
 		@rect = @paper.rect(0,0,0,60)
@@ -23,6 +25,7 @@ class @LSC.Chart
 			"text-anchor":			'start'
 		@title.dblclick(@edit)
 		@update()
+		$("#workspace").css("cursor", "default")
 	edit: =>
 		unless @editor?
 			@editor = $("<input type='text'/>")
@@ -67,10 +70,10 @@ class @LSC.Chart
 		for instance in @instances
 			yi = @y + 2 * cfg.margin			# Why is there an y here???
 			hi = preheight + postheight - cfg.margin * 2
-			instance.update(@numberX(instance.number), yi, hi)
+			instance.update(yi, hi)
 		#redraw messages
 		for message in @messages
-			message.update(@locationY(message.location))
+			message.update()
 		height = @y + cfg.margin + preheight + postheight + cfg.margin
 		@updateSize(@x + 2 * (cfg.margin + cfg.prechart.padding) + width, height)
 	#Update paper size for this chart
@@ -93,17 +96,57 @@ class @LSC.Chart
 					i.number += 1
 		instance.number = number
 		@update()
-	addInstance: (instance) =>
-		@instances.push(instance)
-		instance.number = @instances.length - 1
-		instance.paper = @paper
-		instance.lsc = @
-	addMessage: (message) =>
-		@messages.push(message)
-		message.location = @locations
-		message.paper = @paper
-		@locations = @locations + 1
-	createMessage: (sourceNumber, targetNumber, location, name) =>
+	addMessage: =>
+		if @instances.length > 1
+			@isAddingMessage = true
+			$("#workspace").css("cursor", "crosshair")
+			@addingM = null
+	mouseDown: (event) =>
+		if @isAddingMessage
+			event.stopPropagation()
+			x = LSC.pageX2RaphaelX(event.pageX)
+			s_num = @xNumber(x)
+			if @numberX(s_num) > x
+				t_num = s_num - 1
+				t_num = 1 if t_num < 0
+			else
+				t_num = s_num + 1
+				t_num = s_num - 1 if t_num >= @instances.length
+			loc = @GetLocation(LSC.pageY2RaphaelY(event.pageY))
+			@addingM = @createMessage(s_num, t_num, loc, "msg()", false)
+	mouseMove: (event) =>
+		if isNaN event.pageY
+			log "pis"
+		if isNaN event.pageX
+			log "pis!"
+		if @isAddingMessage and @addingM?
+			event.stopPropagation()
+			x = LSC.pageX2RaphaelX(event.pageX)
+			t_num = @xNumber(x)
+			loc = @GetLocation(LSC.pageY2RaphaelY(event.pageY))
+			if t_num == @addingM.source.number
+				s_num = @addingM.source.number
+				if @numberX(s_num) > x
+					t_num = s_num - 1
+					t_num = 1 if t_num < 0
+				else
+					t_num = s_num + 1
+					t_num = s_num - 1 if t_num >= @instances.length
+			target = i for i in @instances when i.number == t_num
+			if @addingM.target != target or loc != @addingM.location
+				@addingM.target = target
+				if loc != @addingM.location
+					@moveMessage(@addingM, loc)
+				else
+					@addingM.update()
+	mouseUp: (event) =>
+		if @isAddingMessage
+			@mouseMove(event)
+			@isAddingMessage = false
+			$("#workspace").css("cursor", "default")
+			@addingM.edit()
+			@addingM = null
+	createMessage: (sourceNumber, targetNumber, location, name, edit = true) =>
 		target = i for i in @instances when i.number == targetNumber
 		source = i for i in @instances when i.number == sourceNumber
 		m = new LSC.Message(name, source, target, location, @)
@@ -112,7 +155,13 @@ class @LSC.Chart
 		@messages.push m
 		@locations = @locations + 1
 		@update()
-		m.edit()
+		m.edit()		if edit
+		return m
+	createInstance: =>
+		i = new LSC.Instance("New instance", @instances.length, @paper, @)
+		@instances.push(i)
+		@update()
+		i.edit()
 	numberX: (number) =>	#Given instance number, get x-value
 		offset = cfg.prechart.padding + cfg.margin + cfg.instance.width / 2
 		return @x + offset + (number * cfg.instance.width)
@@ -147,9 +196,15 @@ class @LSC.Chart
 				@lineloc += 1
 		message.location = location
 		@update()
-	clearSelection: =>
-		m.unselect() for m in @messages when m.selected
-		i.unselect() for i in @instances when i.selected
+	clearSelection: (e) =>
+		deselected = false	# Stop event propergation if we deselected anything
+		for m in @messages when m.selected
+			m.unselect()
+			deselected = true
+		for i in @instances when i.selected
+			i.unselect()
+			deselected = true
+		e?.stopPropagation?()			if deselected
 	deleteMessage: (m) =>
 		for msg in @messages when msg.location > m.location
 			msg.location -= 1
@@ -176,8 +231,23 @@ class @LSC.Chart
 			locations:		@locations
 			instances:		(i.toJSON() for i in @instances)
 			messages:		(m.toJSON() for m in @messages)
+	@emptyJSON:
+		name: "Untitled Chart"
+		lineloc:			1
+		locations:			2
+		instances:			[]
+		messages:			[]
 	fromJSON: (json) =>
-		#TODO: Load data form json
+		@name = json.name
+		@lineloc = json.lineloc
+		@locations = json.locations
+		for inst in json.instances
+			@instances.push new LSC.Instance(inst.name, inst.number, @paper, @)
+		for msg in json.messages
+			for i in @instances
+				source = i		if i.number == msg.source
+				target = i		if i.number == msg.target
+			@messages.push new LSC.Message(msg.name, source, target, msg.location, @)
 	serialize: => $.toJSON(@toJSON())
 	deserialize: (data) => @fromJSON($.secureEvalJSON(data))
 

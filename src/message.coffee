@@ -21,6 +21,9 @@ class @LSC.Message
 		@arrow.drag(@move, @drag, @drop)
 		@rect.drag(@move, @drag, @drop)
 		@text.drag(@move, @drag, @drop)
+		@text.mousedown(@select)
+		@rect.mousedown(@select)
+		@arrow.mousedown(@select)
 		@text.dblclick(@edit)
 	hoverIn: =>
 		unless @selected
@@ -30,7 +33,8 @@ class @LSC.Message
 		unless @selected
 			@rect.update
 				opacity: 0
-	select: =>
+	select: (event) =>
+		event?.stopPropagation?()
 		unless @selected
 			@lsc.clearSelection()
 			@selected = true
@@ -40,9 +44,10 @@ class @LSC.Message
 		@selected = false
 		@rect.update
 			opacity: 0
-	update: (@y) =>
-		xs = @source.x
-		xt = @target.x
+	update: =>
+		y = @lsc.locationY(@location)
+		xs = @lsc.numberX(@source.number)
+		xt = @lsc.numberX(@target.number)
 		ar_w = cfg.arrow.width
 		ar_h = cfg.arrow.height
 		if xs < xt
@@ -63,7 +68,6 @@ class @LSC.Message
 			width: Math.abs(xs - xt) + 2 * cfg.margin
 			height: cfg.location.height - cfg.margin
 	drag: (x, y, event) => 			#Start drag
-		@select()
 	move: (dx, dy, x, y, event) => 	#Move (during drag)
 		dst = @lsc.GetLocation(LSC.pageY2RaphaelY(y))
 		if dst != @location
@@ -71,8 +75,8 @@ class @LSC.Message
 	drop: (event) => 				#End drag
 	edit: (event) =>				#Edit name
 		unless @editor?
-			xs = @source.x
-			xt = @target.x
+			xs = @lsc.numberX(@source.number)
+			xt = @lsc.numberX(@target.number)
 			if xs < xt
 				x = xs + cfg.arrow.width
 			if xs > xt
@@ -80,7 +84,7 @@ class @LSC.Message
 			@editor = $("<input type='text'/>")
 			@editor.css
 				left:			x
-				top:			@y - cfg.margin - 10
+				top:			@lsc.locationY(@location) - cfg.margin - 10
 				width:			cfg.instance.width - cfg.arrow.width * 2
 				height:			12
 			@editor.addClass("editor")
@@ -88,6 +92,7 @@ class @LSC.Message
 			@text.attr
 				text: ""
 				opacity: 0
+			@editor.mousedown (e) -> e.stopPropagation()
 			@editor.val(@name).focus().select().blur(@unedit).keypress (event) =>
 				@unedit() if event.keyCode == 13
 	unedit: (event) =>				#End edit

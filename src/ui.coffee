@@ -70,6 +70,8 @@ class @LSC.Toolbar
 		@title.attr
 			text: title
 		@update()
+	getTitle: =>
+		return @title.attr "text"
 
 class @LSC.Button
 	constructor: (icon, @tooltip, @toolbar) ->
