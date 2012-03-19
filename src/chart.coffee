@@ -10,7 +10,43 @@ class @LSC.Chart
 		@prechart.attr
 			"stroke-dasharray": "--"
 		@postchart = @paper.path("")
+		@title = @paper.text(10, 30, @name)
+		@title.width = "50%"
+		@rect = @paper.rect(0,0,0,60)
+		@rect.dblclick(@edit)
+		@rect.attr
+			fill: 			"#999"
+			"fill-opacity": 0
+			width:			'100%'
+		@title.attr
+			"font-size": 			40
+			"text-anchor":			'start'
+		@title.dblclick(@edit)
 		@update()
+	edit: =>
+		unless @editor?
+			@editor = $("<input type='text'/>")
+			@editor.css
+				left:			'10px'
+				top:			@y - '30'
+				width:			"90%"
+				height:			cfg.instance.head.height
+			@editor.addClass("title")
+			@editor.appendTo("#workspace")
+			@title.attr
+				text: ""
+				opacity: 0
+			@editor.val(@name).focus().select().blur(@unedit).keypress (event) =>
+				@unedit() if event.keyCode == 13
+	unedit: (event) =>				#End name edit
+		if @editor?
+			return if @editor.val() == ""
+			@name = @editor.val()
+			@title.attr
+				text: @name
+				opacity: 1
+			@editor.remove()
+			@editor = null
 	update: =>
 		width = Math.max(cfg.instance.width * @instances.length, cfg.chart.minwidth)
 		preheight = cfg.instance.head.height + cfg.margin + cfg.location.height * @lineloc
@@ -135,7 +171,7 @@ class @LSC.Chart
 		@deleteInstance(i) for i in @instances when i.selected
 		@update()
 	toJSON: =>
-			name:			"Untitled Chart"
+			name:			@title
 			lineloc:		@lineloc
 			locations:		@locations
 			instances:		(i.toJSON() for i in @instances)

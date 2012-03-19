@@ -3,7 +3,7 @@
 # Don't mess with these, most of them are more like constants than configuration
 # settings.
 @cfg =
-	margin:					10
+	margin:					40
 	instance:
 		head:
 			width:			150
@@ -37,11 +37,39 @@
 # LSC namespace if not already there
 @LSC ?= {}
 
-#TODO: Implement this...
-class @LSC.Document
+# Current Chart
+@CurrentChart = null
 
-# Initialize everything
-@LSC.initialize = (paper) =>
+# Convert PageX, PageY to raphael coordinates
+@LSC.pageX2RaphaelX = (x) -> x + $("#workspace").scrollLeft() - $("#workspace").offset().left;
+@LSC.pageY2RaphaelY = (y) -> y + $("#workspace").scrollTop() - $("#workspace").offset().top;
+
+# Log messages
+@log = (msg) =>
+	if console?.log?
+		console.log msg
+	else
+		alert "Provide console.log for log messages"
+		@log = (msg) ->
+# Utility for inspection for objects
+@inspect = (object) =>
+	str = "{"
+	for key, value of object
+		str += "#{key}: \"#{value}\", "
+	return str + "}"
+
+#### Initialize the editor
+$ =>
+	sidebar = new @LSC.Sidebar()
+
+	# Maintain workspace height
+	$(window).resize ->
+		$("#workspace").height($(window).height() - cfg.toolbar.height)
+		$("#sidebar").height($(window).height() - cfg.toolbar.height)
+	$(window).resize()
+
+	# Create workspace paper
+	@paper = @Raphael("workspace", "400", "400")
 	@Raphael.el.update = (params) -> @animate params, cfg.animation.speed
 	@Raphael.el.moveTo = (x, y) ->
 			if @type == "path"
@@ -53,38 +81,12 @@ class @LSC.Document
 				@translate(x - @getBBox().x, y - @getBBox().y)
 			else
 				return this.attr({x: x, y: y});
-	@scene = paper.rect(0,0,"100%","100%")
+	# Create Scene (phase this later out if possible)
+	@scene = paper.rect(0, 0, "100%", "100%")
 	@scene.attr
 		fill: 		"#fff"
 		opacity:	0
 		stroke:		"none"
-
-@CurrentChart = null
-
-# Convert PageX, PageY to raphael coordinates
-@LSC.pageX2RaphaelX = (x) -> x + $("#workspace").scrollLeft() - $("#workspace").offset().left;
-@LSC.pageY2RaphaelY = (y) -> y + $("#workspace").scrollTop() - $("#workspace").offset().top;
-
-
-#### Initialize the editor
-$ =>
-	$(window).resize ->
-		$("#workspace").height($(window).height() - cfg.toolbar.height)
-	$(window).resize()
-	
-	@paper = @Raphael("workspace", "400", "400")
-	@LSC.initialize(@paper)
-	@log = (msg) =>
-		if console?.log?
-			console.log msg
-		else
-			alert "Provide console.log for log messages"
-			@log = (msg) ->
-	@inspect = (object) =>
-		str = "{"
-		for key, value of object
-			str += "#{key}: \"#{value}\", "
-		return str + "}"
 
 	lsc = new @LSC.Chart("Untitled.lsc", @paper)
 
@@ -163,15 +165,19 @@ $ =>
 	i0 = new @LSC.Instance("I/O", 0, @paper, lsc)
 	lsc.addInstance(i0)
 	lsc.update()
+	sidebar.update(lsc)
 	i1 = new @LSC.Instance("Control", 1, @paper, lsc)
 	lsc.addInstance(i1)
 	lsc.update()
+	sidebar.update(lsc)
 	i2 = new @LSC.Instance("Timer1", 2, @paper, lsc)
 	lsc.addInstance(i2)
 	lsc.update()
+	sidebar.update(lsc)
 	i3 = new @LSC.Instance("Timer2", 3, @paper, lsc)
 	lsc.addInstance(i3)
 	lsc.update()
+	sidebar.update(lsc)
 	m = new @LSC.Message("helloWorld()", i0, i1, 0, lsc)
 	lsc.addMessage(m)
 	lsc.update()

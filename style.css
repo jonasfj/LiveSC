@@ -21,6 +21,16 @@ input.editor{
 	background:		transparent;
 }
 
+input.title{
+	position:		absolute;
+	font-family:	arial;
+	font-size:		40px;
+	border:			none;
+	text-align:		left;
+	z-index:		1000;
+	background:		transparent;
+}
+
 svg{
 	-webkit-user-select: none;
 	-khtml-user-select: none;
