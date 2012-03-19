@@ -46,8 +46,8 @@ class @LSC.Message
 			opacity: 0
 	update: =>
 		y = @lsc.locationY(@location)
-		xs = @source.x
-		xt = @target.x
+		xs = @lsc.numberX(@source.number)
+		xt = @lsc.numberX(@target.number)
 		ar_w = cfg.arrow.width
 		ar_h = cfg.arrow.height
 		if xs < xt
@@ -75,8 +75,8 @@ class @LSC.Message
 	drop: (event) => 				#End drag
 	edit: (event) =>				#Edit name
 		unless @editor?
-			xs = @source.x
-			xt = @target.x
+			xs = @lsc.numberX(@source.number)
+			xt = @lsc.numberX(@target.number)
 			if xs < xt
 				x = xs + cfg.arrow.width
 			if xs > xt
