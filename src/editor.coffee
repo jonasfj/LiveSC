@@ -121,7 +121,6 @@
 	# Add new empty chart
 	addChart(@LSC.Chart.emptyJSON)
 
-
 # Initialize editor
 $ LSC.initialize
 
