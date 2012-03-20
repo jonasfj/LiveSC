@@ -1,7 +1,7 @@
 @LSC ?= {}
 
 class @LSC.Chart
-	constructor: (@name, @paper, @sidebar, @x = 0, @y = cfg.toolbar.height) ->
+	constructor: (@name, @paper, @x = 0, @y = cfg.toolbar.height) ->
 		@messages = []
 		@instances = []
 		@lineloc = 1			#Location between pre- and postchart
@@ -26,6 +26,11 @@ class @LSC.Chart
 			"text-anchor":			'start'
 		@title.dblclick(@edit)
 		@update()
+	change: (callback) -> #Til sidebar fra editor-klassen
+		if callback?
+			@changeCallback = callback
+		else
+			@changeCallback?(@)
 	edit: =>
 		unless @editor?
 			@editor = $("<input type='text' id='input'/>")
@@ -52,7 +57,7 @@ class @LSC.Chart
 				opacity: 1
 			@editor.remove()
 			@editor = null
-			@sidebar.update(@)
+			@change()
 	update: =>
 		width = Math.max(cfg.instance.width * @instances.length, cfg.chart.minwidth)
 		preheight = cfg.instance.head.height + cfg.margin + cfg.location.height * @lineloc

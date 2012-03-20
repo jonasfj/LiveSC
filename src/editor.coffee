@@ -120,8 +120,8 @@
 	new @LSC.Button("trash", "Delete selection", toolbar).click 		-> CurrentChart?.deleteSelection()
 	new @LSC.Button("cloudDown", "Download project", toolbar).click		download
 
-	@CurrentChart = new @LSC.Chart("Untitled.lsc", @paper, @Sidebar);
-
+	@CurrentChart = new @LSC.Chart("Untitled.lsc", @paper);
+	@CurrentChart.change(@Sidebar.update)
 
 # Initialize editor
 $ LSC.initialize

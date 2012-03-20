@@ -6,7 +6,7 @@ class @LSC.Sidebar
 		if @ting?
 			@ting.remove()
 			@ting = null
-		@table = "<table>" #<tr><td>HEJ</td></tr>
+		@table = "<table>" 
 		@table += "<tr><td style='width:250px;'>" + chart.name
 		@table += "</td></tr>\n"
 		for instance in chart.instances
