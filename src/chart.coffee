@@ -256,6 +256,7 @@ class @LSC.Chart
 				source = i		if i.number == msg.source
 				target = i		if i.number == msg.target
 			@messages.push new LSC.Message(msg.name, source, target, msg.location, @)
+		@update()
 	serialize: => $.toJSON(@toJSON())
 	deserialize: (data) => @fromJSON($.secureEvalJSON(data))
 

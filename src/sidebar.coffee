@@ -8,10 +8,10 @@ class @LSC.Sidebar
 		@entry.data("index", index)
 		@entry.click -> cb?(index)
 	updateEntry: (index, name) ->
-		@parent.children().each (entry) ->
-			if entry.data("index") == index
-				entry.html(name)
+		@parent.children().each ->
+			if $(@).data("index") == index
+				$(@).html(name)
 	removeEntry: (index) ->
-		@parent.children().each (entry) ->
-			if entry.data("index") == index
-				entry.remove()
+		@parent.children().each ->
+			if $(@).data("index") == index
+				$(@).remove()
