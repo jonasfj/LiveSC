@@ -61,17 +61,26 @@
 # Utility for inspection for objects
 @inspect = (object) => "{" + ("#{key}: \"#{value}\"" for key, value of object).join(", ") + "}"
 
+# Allow updates to be instant or animated
+instant = false
+@LSC.instant = -> instant = true
+@LSC.animate = -> instant = false
+
 #### Initialize the editor
 @LSC.initialize = =>
 	# Maintain workspace height
 	$(window).resize ->
 		$("#workspace").height($(window).height() - cfg.toolbar.height)
-		$("sidebar").height($(window).height() - cfg.toolbar.height)
+		$("#chartlist").height($(window).height() - cfg.toolbar.height)
 	$(window).resize()
 	
 	# Create workspace paper
-	@paper = @Raphael("workspace", "400", "400")
-	@Raphael.el.update = (params) -> @animate params, cfg.animation.speed
+	@paper = @Raphael("workspace", cfg.chart.minwidth, "400")
+	@Raphael.el.update = (params) ->
+		if instant
+			@attr params
+		else
+			@animate params, cfg.animation.speed
 	@Raphael.el.moveTo = (x, y) ->
 			if @type == "path"
 				#Translate position iteratively :(
@@ -121,7 +130,7 @@
 	new @LSC.Button("cloudDown", "Download project", toolbar).click		download
 
 	# Add new empty chart
-	addChart(@LSC.Chart.emptyJSON)
+	addChart()
 
 # Initialize editor
 $ LSC.initialize
@@ -141,7 +150,7 @@ switchChart = (index) =>
 			@Charts[@CurrentIndex] = @CurrentChart.toJSON()
 		@paper.clear()
 		# Load new chart
-		@CurrentChart = new @LSC.Chart("Untitled.lsc", @paper)
+		@CurrentChart = new @LSC.Chart(@paper)
 		@CurrentChart.fromJSON(@Charts[index])
 		@CurrentIndex = index
 		@CurrentChart.change chartChanged
@@ -151,7 +160,7 @@ chartChanged = =>
 		@sidebar.updateEntry(@CurrentIndex, @CurrentChart.name)
 
 # Download everything
-download = ->
+download = =>
 	# Save current chart
 	if @CurrentChart?
 		@Charts[@CurrentIndex] = @CurrentChart.toJSON()
@@ -165,6 +174,7 @@ download = ->
 
 # Check if event carries file
 hasFile = (event) ->
+	return true
 	return true if event?.dataTransfer?.files?.length > 0
 	return false
 
@@ -227,11 +237,15 @@ dropFile = (event) =>
 	@CurrentIndex = 0
 	@Charts = []
 	@paper.clear()
-	data = @.secureEvalJSON(file.getData("Text"))
-	for item in data.charts
-		addChart(item, false)
-	@toolbar.setTitle(data.title)
-	if @Charts.length == 0
-		addChart()
-	else
-		switchChart(0)
+	@sidebar.clear()
+	reader = new FileReader();
+	reader.onload = =>
+		data = $.secureEvalJSON(reader.result)
+		for item in data.charts
+			addChart(item, false)
+		@toolbar.setTitle(data.title)
+		if @Charts.length == 0
+			addChart()
+		else
+			switchChart(0)
+	reader.readAsText(file)

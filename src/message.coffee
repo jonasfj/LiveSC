@@ -87,7 +87,7 @@ class @LSC.Message
 				top:			@lsc.locationY(@location) - cfg.margin - 10
 				width:			cfg.instance.width - cfg.arrow.width * 2
 				height:			12
-			@editor.addClass("editor")
+			@editor.addClass("editor centered")
 			@editor.appendTo("#workspace")
 			@text.attr
 				text: ""

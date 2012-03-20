@@ -7,11 +7,14 @@ class @LSC.Sidebar
 		@entry.appendTo(@parent)
 		@entry.data("index", index)
 		@entry.click -> cb?(index)
-	updateEntry: (index, name) ->
+	updateEntry: (index, name) =>
 		@parent.children().each ->
 			if $(@).data("index") == index
 				$(@).html(name)
-	removeEntry: (index) ->
+	removeEntry: (index) =>
 		@parent.children().each ->
 			if $(@).data("index") == index
 				$(@).remove()
+	clear: =>
+		@parent.children().each ->
+			$(@).remove()

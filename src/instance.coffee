@@ -57,7 +57,7 @@ class @LSC.Instance
 				top:			@y + cfg.margin / 2
 				width:			cfg.instance.head.width - cfg.margin
 				height:			cfg.instance.head.height - cfg.margin
-			@editor.addClass("editor")
+			@editor.addClass("editor centered")
 			@editor.appendTo("#workspace")
 			@text.attr
 				text: ""

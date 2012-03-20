@@ -39,7 +39,7 @@ class @LSC.Toolbar
 					width:			@title.getBBox().width
 					background:		"#ccc"
 					height:			12
-				@editor.addClass("editor")
+				@editor.addClass("editor centered")
 				$("body").append(@editor)
 				text = @title.attr("text")
 				@title.attr

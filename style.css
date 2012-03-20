@@ -10,12 +10,15 @@ body{
 	overflow:		hidden;
 }
 
+input.centered{
+	text-align:		center;
+}
+
 input.editor{
 	position:		absolute;
 	font-family:	arial;
 	font-size:		10px;
 	border:			none;
-	text-align:		center;
 	z-index:		1000;
 	outline: 		none;
 	background:		transparent;
@@ -54,14 +57,16 @@ svg{
 }
 
 div.wrapright{
-	float:			none;
+	float:			left;
 	width:			100%;
 }
 
 #chartlist{
 	float:			left;
 	width:			250px;
-	height:			100px;
+	min-height:		100px;
+	margin-left:	-100%;
+	overflow:		auto;
 }
 
 #chartlist .item{

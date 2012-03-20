@@ -1,7 +1,8 @@
 @LSC ?= {}
 
 class @LSC.Chart
-	constructor: (@name, @paper, @x = 0, @y = cfg.toolbar.height) ->
+	constructor: (@paper, @x = 0, @y = cfg.toolbar.height) ->
+		@name = "Untitled Chart"
 		@messages = []
 		@instances = []
 		@lineloc = 1			#Location between pre- and postchart
@@ -14,18 +15,10 @@ class @LSC.Chart
 		@addingM = null
 		$("#workspace").css("cursor", "default")
 		@title = @paper.text(10, 20, @name)
-		@title.width = "50%"
-		@rect = @paper.rect(0,0,0,40)
-		@rect.dblclick(@edit)
-		@rect.attr
-			fill: 			"#999"
-			"fill-opacity": 0
-			width:			cfg.chart.minwidth + cfg.margin + 2*cfg.prechart.padding #inden i prechart/svg
 		@title.attr
-			"font-size": 			30
+			"font-size": 			24
 			"text-anchor":			'start'
 		@title.dblclick(@edit)
-		@update()
 	change: (callback) -> #Til sidebar fra editor-klassen
 		if callback?
 			@changeCallback = callback
@@ -34,31 +27,33 @@ class @LSC.Chart
 	edit: =>
 		unless @editor?
 			@editor = $("<input type='text' id='input'/>")
+			@editor.addClass("editor")
 			@editor.css
-				border:			'none'
-				position:		'absolute'
 				left:			'10px'
-				top:			'2px' #Inden i workspace
-				width:			"30%"
-				height:			cfg.instance.head.height - '10'
-				"font-size": 	30
+				top:			'2px'
+				width:			"95%"
+				"font-size": 	24
 			@editor.appendTo("#workspace")
 			@title.attr
-				text: ""
-				opacity: 0
+				text: 		""
+				opacity: 	0
 			@editor.val(@name).focus().select().blur(@unedit).keypress (event) =>
 				@unedit() if event.keyCode == 13
 	unedit: (event) =>				#End name edit
 		if @editor?
-			return if @editor.val() == ""
+			if @editor.val() == ""
+				event.stopPropagation()
+				event.preventDefault()
+				return
 			@name = @editor.val()
 			@title.attr
-				text: @name
-				opacity: 1
+				text: 		@name
+				opacity: 	1
 			@editor.remove()
 			@editor = null
 			@change()
-	update: =>
+	update: (instant = false) =>
+		LSC.instant() if instant
 		width = Math.max(cfg.instance.width * @instances.length, cfg.chart.minwidth)
 		preheight = cfg.instance.head.height + cfg.margin + cfg.location.height * @lineloc
 		#redraw prechart
@@ -83,10 +78,15 @@ class @LSC.Chart
 		for message in @messages
 			message.update()
 		height = @y + cfg.margin + preheight + postheight + cfg.margin
+		#redraw title
+		@title.attr
+			text: @name
 		@updateSize(@x + 2 * (cfg.margin + cfg.prechart.padding) + width, height)
+		LSC.animate() if instant
 	#Update paper size for this chart
 	updateSize: (width, height) =>
 		# Only update width and height if necessary
+		width = Math.max($(window).width() - cfg.sidebar.width - cfg.margin, width)
 		if width != @width or height != @height
 			@width = width
 			@height = height
@@ -234,7 +234,7 @@ class @LSC.Chart
 		@deleteInstance(i) for i in @instances when i.selected
 		@update()
 	toJSON: =>
-			name:			"Untitled Chart"
+			name:			@name
 			lineloc:		@lineloc
 			locations:		@locations
 			instances:		(i.toJSON() for i in @instances)
@@ -256,7 +256,7 @@ class @LSC.Chart
 				source = i		if i.number == msg.source
 				target = i		if i.number == msg.target
 			@messages.push new LSC.Message(msg.name, source, target, msg.location, @)
-		@update()
+		@update(true)
 	serialize: => $.toJSON(@toJSON())
 	deserialize: (data) => @fromJSON($.secureEvalJSON(data))
 
