@@ -63,3 +63,24 @@ div.wrapright{
 	width:			250px;
 	height:			100px;
 }
+
+#chartlist .item{
+	padding:		5px;
+	cursor:			pointer;
+}
+
+#chartlist .item:nth-child(odd){
+	background:		#fff;
+}
+#chartlist .item:nth-child(even){
+	background:		#f6f6f6;
+}
+
+
+#chartlist .item:hover{
+	background:		#e6e6e6;
+	-moz-box-shadow: 0 0 3px rgba(0,0,0,0.5);
+	-webkit-box-shadow: 0 0 3px rgba(0,0,0,0.5);
+	box-shadow: 0 0 3px rgba(0,0,0,0.5);
+}
+

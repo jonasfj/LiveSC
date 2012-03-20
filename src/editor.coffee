@@ -14,11 +14,11 @@
 			width:			100
 	location:
 		height:				40
-	chart:
-		minwidth:			400
 	arrow:
 		width:				10
 		height:				3
+	sidebar:
+		width:				250
 	animation:
 		speed:				300
 	prechart:
@@ -107,37 +107,47 @@
 	# Notice how `Chart.mouseDown(e)` will `stopPropagation()` when adding message, but otherwise
 	# the event will propergate to `Chart.clearSelection(e)`.
 
-	@Sidebar = new @LSC.Sidebar()
+	#### Initialize Sidebar
+	@sidebar = new @LSC.Sidebar($("#chartlist"))
 
 	#### Initialize toolbar
 	@toolbar = new @LSC.Toolbar(@Raphael("toolbar", "100%", cfg.toolbar.height))
 	new @LSC.Button("piechart", "Add chart", toolbar).click 			addChart
-	new @LSC.Button("plus", "Add instance", toolbar).click 				-> 
-		CurrentChart?.createInstance()
-		if CurrentChart?
-			Sidebar.update(CurrentChart)
+	new @LSC.Button("plus", "Add instance", toolbar).click 				-> CurrentChart?.createInstance()
 	new @LSC.Button("exchange", "Add message", toolbar).click 			-> CurrentChart?.addMessage()
 	new @LSC.Button("trash", "Delete selection", toolbar).click 		-> CurrentChart?.deleteSelection()
 	new @LSC.Button("cloudDown", "Download project", toolbar).click		download
 
-	@CurrentChart = new @LSC.Chart("Untitled.lsc", @paper, @Sidebar);
+	# Add new empty chart
+	addChart(@LSC.Chart.emptyJSON)
 
 
 # Initialize editor
 $ LSC.initialize
 
-# Create a new chart, add to list, and switch to this chart
-addChart = =>
-	@Charts.push(@LSC.Chart.emptyJSON)
-	switchChart(@Charts.length-1)
+# Add new chart to list, and switch to this chart
+addChart = (json = @LSC.Chart.emptyJSON, switchto = true) =>
+	@Charts.push(json)
+	index = @Charts.length - 1
+	@sidebar.addEntry(index, json.name, switchChart)
+	if switchto
+		switchChart(index)
 
 switchChart = (index) =>
 	if @Charts[index]?
-		# Save old chart
-		@Charts[@CurrentIndex] = @CurrentChart.toJSON()
+		# Save old chart if exists
+		if @CurrentChart?
+			@Charts[@CurrentIndex] = @CurrentChart.toJSON()
 		@paper.clear()
+		# Load new chart
 		@CurrentChart = new @LSC.Chart("Untitled.lsc", @paper)
 		@CurrentChart.fromJSON(@Charts[index])
+		@CurrentIndex = index
+		@CurrentChart.change chartChanged
+
+chartChanged = =>
+	if @CurrentChart?
+		@sidebar.updateEntry(@CurrentIndex, @CurrentChart.name)
 
 # Download everything
 download = ->
@@ -152,12 +162,18 @@ download = ->
 	dataurl = "data:application/lsc+json;base64,#{$.base64Encode(data)}"
 	window.open(dataurl, "_blank")
 
+# Check if event carries file
+hasFile = (event) ->
+	return true if event?.dataTransfer?.files?.length > 0
+	return false
+
 # Drag effect state
 dragEffect = dragIcon = dragLeftTimeout = null
 dragEffectLeaving = false
 
 # Add drag effect, if not already there
 dragEffectAdd = (event) ->
+	return unless hasFile(event)
 	if dragLeftTimeout?
 		clearTimeout(dragLeftTimeout)
 		dragLeftTimeout = null
@@ -194,27 +210,27 @@ dragEffectRemove = ->
 			dragEffectLeaving = false
 
 dragFileOver = (event) ->
+	return unless hasFile(event)
 	dragEffectAdd()		# Ensure drag effect
 	event.stopPropagation()
 	event.preventDefault()
-	#TODO Check if dataTransfer.files is defined, and if it's non-empty
 	event.dataTransfer.dropEffect = 'copy'
 
-dropFile = (event) ->
+dropFile = (event) =>
+	return unless hasFile(event)
 	dragEffectLeave()	# Remove drag effect
-	event.stopPropagation()	#Don't do this is not handled here!
-	event.preventDefault()	#Ie. if it's not a file
-	###files = event.dataTransfer.files
-	for f in files
-		alert(escape(f.name))
+	event.stopPropagation()
+	event.preventDefault()
+	file = event.dataTransfer.files[0]
 	@CurrentChart = null
 	@CurrentIndex = 0
-	@paper.clear()
-	data = @.secureEvalJSON(event.dataTransfer.getData("Text"))
-	alert data
 	@Charts = []
+	@paper.clear()
+	data = @.secureEvalJSON(file.getData("Text"))
 	for item in data.charts
-		@Charts.push(item)
+		addChart(item, false)
 	@toolbar.setTitle(data.title)
-	@CurrentChart = new @LSC.Chart("Untitled.lsc", @paper)
-	@CurrentChart.fromJSON(@Charts[@CurrentIndex])###
+	if @Charts.length == 0
+		addChart()
+	else
+		switchChart(0)

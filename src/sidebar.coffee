@@ -1,17 +1,17 @@
 @LSC ?= {}
 
 class @LSC.Sidebar
-	constructor: () ->
-	update: (chart) =>
-		if @ting?
-			@ting.remove()
-			@ting = null
-		@table = "<table>" #<tr><td>HEJ</td></tr>
-		@table += "<tr><td style='width:250px;'>" + chart.name
-		@table += "</td></tr>\n"
-		for instance in chart.instances
-			@table += "<tr><td class='instancerow'>" + instance.name
-			@table += "</td></tr>\n"
-		@table += "</table>"
-		@ting = $(@table)
-		@ting.appendTo("#chartlist")
+	constructor: (@parent) ->
+	addEntry: (index, name, cb) ->
+		@entry = $("<div class='item'>#{name}</div>")
+		@entry.appendTo(@parent)
+		@entry.data("index", index)
+		@entry.click -> cb?(index)
+	updateEntry: (index, name) ->
+		@parent.children().each (entry) ->
+			if entry.data("index") == index
+				entry.html(name)
+	removeEntry: (index) ->
+		@parent.children().each (entry) ->
+			if entry.data("index") == index
+				entry.remove()
