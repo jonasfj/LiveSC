@@ -61,11 +61,10 @@
 
 #### Initialize the editor
 @LSC.initialize = =>
-	sidebar = new @LSC.Sidebar()
 	# Maintain workspace height
 	$(window).resize ->
 		$("#workspace").height($(window).height() - cfg.toolbar.height)
-		$("#sidebar").height($(window).height() - cfg.toolbar.height)
+		$("sidebar").height($(window).height() - cfg.toolbar.height)
 	$(window).resize()
 	
 	# Create workspace paper
@@ -108,15 +107,21 @@
 	# Notice how `Chart.mouseDown(e)` will `stopPropagation()` when adding message, but otherwise
 	# the event will propergate to `Chart.clearSelection(e)`.
 
+	@Sidebar = new @LSC.Sidebar()
+
 	#### Initialize toolbar
 	@toolbar = new @LSC.Toolbar(@Raphael("toolbar", "100%", cfg.toolbar.height))
 	new @LSC.Button("piechart", "Add chart", toolbar).click 			addChart
-	new @LSC.Button("plus", "Add instance", toolbar).click 				-> CurrentChart?.createInstance()
+	new @LSC.Button("plus", "Add instance", toolbar).click 				-> 
+		CurrentChart?.createInstance()
+		if CurrentChart?
+			Sidebar.update(CurrentChart)
 	new @LSC.Button("exchange", "Add message", toolbar).click 			-> CurrentChart?.addMessage()
 	new @LSC.Button("trash", "Delete selection", toolbar).click 		-> CurrentChart?.deleteSelection()
 	new @LSC.Button("cloudDown", "Download project", toolbar).click		download
 
-	@CurrentChart = new @LSC.Chart("Untitled.lsc", @paper);
+	@CurrentChart = new @LSC.Chart("Untitled.lsc", @paper, @Sidebar);
+
 
 # Initialize editor
 $ LSC.initialize

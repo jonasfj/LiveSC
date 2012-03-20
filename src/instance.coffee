@@ -74,6 +74,7 @@ class @LSC.Instance
 				opacity: 1
 			@editor.remove()
 			@editor = null
+			@lsc.sidebar.update(@lsc)
 	hoverIn: =>
 		unless @selected
 			@head.update

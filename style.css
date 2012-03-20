@@ -21,14 +21,8 @@ input.editor{
 	background:		transparent;
 }
 
-input.title{
-	position:		absolute;
-	font-family:	arial;
-	font-size:		40px;
-	border:			none;
-	text-align:		left;
-	z-index:		1000;
-	background:		transparent;
+.instancerow{
+	padding-left:	20px;
 }
 
 svg{
@@ -51,14 +45,16 @@ svg{
 }
 
 #workspace{
-	position:		relative;
-	margin-left:	250px;
-	overflow:		auto;
-	border-left:	1px solid #000;
+	position:			relative;
+	margin-left:		250px;
+	overflow:			auto;
+	border-left:		1px solid #000;
+	background-color:	#ffffff;
+	z-index:			1;
 }
 
 div.wrapright{
-	float:			left;
+	float:			none;
 	width:			100%;
 }
 
