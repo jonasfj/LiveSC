@@ -3,6 +3,7 @@ html{
 }
 
 body{
+	height: 		100%;
 	margin:			0px;
 	padding:		0px;
 	font-size:		75%;
@@ -89,3 +90,12 @@ div.wrapright{
 	box-shadow: 0 0 3px rgba(0,0,0,0.5);
 }
 
+#effectarea{
+	position: 		absolute;
+	z-index: 		99999999;
+	width: 			100%;
+	height: 		100%;
+	top: 			0px;
+	left: 			0px;
+	display:		none;
+}

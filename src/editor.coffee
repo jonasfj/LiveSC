@@ -174,7 +174,6 @@ download = =>
 
 # Check if event carries file
 hasFile = (event) ->
-	return true
 	return true if event?.dataTransfer?.files?.length > 0
 	return false
 
@@ -184,12 +183,13 @@ dragEffectLeaving = false
 
 # Add drag effect, if not already there
 dragEffectAdd = (event) ->
-	return unless hasFile(event)
+	return if event? and not hasFile(event, "add")
 	if dragLeftTimeout?
 		clearTimeout(dragLeftTimeout)
 		dragLeftTimeout = null
 	unless dragEffect?
-		dragEffect = Raphael(0, 0, "100%", "100%")
+		$("#effectarea").css("display", "block")
+		dragEffect = Raphael("effectarea", "100%", "100%")
 		path = Raphael.transformPath(Icons["cloudUp"], "s30")
 		path = Raphael.transformPath(path, "t#{$(window).width()/2},#{$(window).height()/2}")
 		dragIcon = dragEffect.path(path)
@@ -206,7 +206,7 @@ dragEffectAdd = (event) ->
 # Initiate remove of drag effect
 dragEffectLeave = (event) ->
 	unless dragLeftTimeout?
-		# Given dragEffectAdd 100ms to cancel this
+		# Give dragEffectAdd 100ms to cancel this
 		dragLeftTimeout = setTimeout(dragEffectRemove, 100)
 
 # Remove drag effect
@@ -215,20 +215,21 @@ dragEffectRemove = ->
 	dragIcon?.animate {opacity: 0}, cfg.animation.speed, ->
 		# Cleanup after animation, if this wasn't cancelled
 		if dragLeftTimeout?
+			$("#effectarea").css("display", "none")
 			dragIcon.remove()
 			dragEffect.remove()
 			dragEffect = dragIcon = dragLeftTimeout = null
 			dragEffectLeaving = false
 
 dragFileOver = (event) ->
-	return unless hasFile(event)
+	return unless hasFile(event, "over")
 	dragEffectAdd()		# Ensure drag effect
 	event.stopPropagation()
 	event.preventDefault()
 	event.dataTransfer.dropEffect = 'copy'
 
 dropFile = (event) =>
-	return unless hasFile(event)
+	return unless hasFile(event, "drop")
 	dragEffectLeave()	# Remove drag effect
 	event.stopPropagation()
 	event.preventDefault()
