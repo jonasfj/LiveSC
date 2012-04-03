@@ -1,0 +1,11 @@
+MODULE main
+	VAR
+		aa : boolean;
+		bb : boolean;
+		cc : boolean;
+	TRANS
+		TRUE
+	JUSTICE
+		bb;
+		!cc;
+		cc;

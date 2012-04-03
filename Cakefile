@@ -40,3 +40,15 @@ task "clean", "Cleanup generated files", ->
 
 task "debug", "Open on chromium with access to local files", ->
 	exec "chromium --allow-file-access-from-files index.htm"
+
+task "applet", "Compile scala applet", ->
+	exec "cd applet; make applet.jar", (err) ->
+		unless err?
+			exec "cp applet/*.jar bin/; cp applet/libs/*.jar bin/"
+
+task "shrink", "Shrink scala applet and dependencies", ->
+	#exec "cd applet; make shrink"
+	#TODO: Finish this
+
+
+

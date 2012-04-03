@@ -1,0 +1,26 @@
+Player sys {
+	Var {
+		x : boolean;
+		y : boolean;
+		z : boolean;
+	}
+	Trans {
+		x & env.r;
+		z' & next(env.w);
+	}
+}
+
+Module env {
+	w : bool;
+	r : boolean;
+	q : boolean;
+	INIT {
+		w := TRUE;
+		//r := FALSE;
+		!r & w -> (w & r & q);
+	}
+		
+	Trans {
+		w & r;
+	}
+}

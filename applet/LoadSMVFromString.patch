@@ -1,0 +1,21 @@
+--- Env.java	2009-10-18 21:31:00.000000000 +0200
++++ Env.java	2012-04-01 11:47:30.697492405 +0200
+@@ -810,6 +810,18 @@
+ 		return loadModule(filename, vars_arr);
+ 	}
+ 
++	public static Module[] loadSMVModuleFromString(String module) throws IOException{
++		try{
++			return loadSMVModule(new ANTLRStringStream(module), false, false, (String[])null);
++		} catch (RecognitionException e) {
++			Env.doError(e, e.getMessage());
++		} catch (ModuleException e) {
++			Env.doError(e, e.getMessage());
++		}
++		throw new IOException("Cannot load SMV modules here!");
++	}
++
++
+ 	/**
+ 	 * <p>
+ 	 * Load a given file into the system without a specified order (i.e. the

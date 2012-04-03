@@ -1,0 +1,28 @@
+Player sys {
+	x : boolean;
+	y : boolean;
+	z : boolean;
+	Init {
+		x;
+		x := FALSE; // initials should be false
+	}
+	Trans {
+		y' -> env.x;
+	}
+	Just {
+		x & y;
+		x -> y;
+	}
+}
+
+Module env {
+	x : bool;
+	y : boolean;
+	INIT {
+		x := TRUE;
+		y := FALSE;
+	}
+	Trans {
+		(!x -> !x') & (x -> x') & (!y -> y') & (y -> !next(y));
+	}
+}

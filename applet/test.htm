@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8" />
+	<title>LiveSC - untitled.lsc</title>
+	<script type="text/javascript">
+function log(msg){
+	document.getElementById("log").innerHTML += msg + "<br/>";
+}
+function test(){
+	log("CheckRealizability: " + document.getElementById("app").checkRealizability("my-string &"));
+}
+	</script>
+</head>
+<body>
+	<applet id="app" style="visibility: hidden; position: absolute;" code="Applet" archive="applet.jar,jtlv.jar,libs/antlr-runtime-3.0.1.jar,libs/javabdd-2.0.jar,libs/jdd.jar,libs/scala-library.jar" width="100" height="100" mayscript="true" scriptable="true"></applet>
+	<div onclick="test()">test</div>
+	<div id="log"></div>
+</body>
+</html>

@@ -1,0 +1,17 @@
+Player sys {
+	x : boolean;
+	y : boolean;
+	z : boolean;
+}
+
+Module env {
+	INIT {
+		x := TRUE;
+		y := FALSE;
+	}
+	x : bool;
+	y : boolean;
+	Trans {
+		x & y;
+	}
+}

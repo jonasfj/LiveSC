@@ -1,0 +1,57 @@
+MODULE main 
+	VAR
+		e : env(s.g);
+		s : sys(e.r);
+
+///////////////////////////////////////////
+MODULE env(g)
+	VAR
+		r : array 0..9 of boolean;
+		R0 : input(r[0], g[0]);
+		R1 : input(r[1], g[1]);
+		R2 : input(r[2], g[2]);
+		R3 : input(r[3], g[3]);
+		R4 : input(r[4], g[4]);
+		R5 : input(r[5], g[5]);
+		R6 : input(r[6], g[6]);
+		R7 : input(r[7], g[7]);
+		R8 : input(r[8], g[8]);
+		R9 : input(r[9], g[9]);
+	TRANS // workaround for a bug, since the transitions here starts from FALSE 
+		TRUE;
+		
+MODULE input(r, g)
+	INIT
+		!r;
+	TRANS
+		((r != g) -> (r = next(r)));
+	JUSTICE
+		!(r & g);
+		
+///////////////////////////////////////////
+MODULE sys(r)
+	VAR
+		g : array 0..9 of boolean;
+		G0 : output(r[0], g[0]);
+		G1 : output(r[1], g[1]);
+		G2 : output(r[2], g[2]);
+		G3 : output(r[3], g[3]);
+		G4 : output(r[4], g[4]);
+		G5 : output(r[5], g[5]);
+		G6 : output(r[6], g[6]);
+		G7 : output(r[7], g[7]);
+		G8 : output(r[8], g[8]);
+		G9 : output(r[9], g[9]);
+	TRANS
+		((g[0] + g[1] + g[2] + g[3] + g[4] + g[5] + g[6] + g[7] + g[8] + g[9]) <= 1);
+		
+MODULE output(r, g)
+	INIT
+		!g;
+	TRANS
+		((r = g) -> (g = next(g)));
+	JUSTICE
+		r = g;
+
+	
+		

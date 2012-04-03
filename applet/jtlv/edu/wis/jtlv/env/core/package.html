@@ -1,0 +1,69 @@
+<body>
+<p>JTLV_IDE/core - edu.wis.jtlv.env.core<br>
+1.edu.wis.jtlv.env.core.fds : a package for all FDS format related
+classes.<br>
+2. edu.wis.jtlv.env.core.smv : a package for all SMV format related
+classes.<br>
+2a. edu.wis.jtlv.env.core.smv.eval : a package responsible for the
+statement evaluation.<br>
+2a(i) edu.wis.jtlv.env.core.smv.eval.temporals : a package which does
+nothing (no need to go into that, only through exceptions for declaring
+temporal operators from within SMV code)<br>
+2b. edu.wis.jtlv.env.core.smv.schema : a package responsible for the
+structure construction.<br>
+</p>
+<p>You can see, that under the main package "edu.wis.jtlv.env.core",
+I have created two separated packages for each format, fds and smv. Each
+to handle each of the formats. Both fds and smv parsing process works
+the same. There are 4 parsing stages.<br>
+a. lexer.<br>
+b. parsing.<br>
+c. variable declaration tree walker.<br>
+d. statement declaration tree walker.</p>
+<p>In package "edu.wis.jtlv.env.core.fds" you can see:<br>
+a. FDSLexer.java - The automatically generated lexer from file FDS.g in
+JTLV_PARESERS.<br>
+b. FDSParser.java - The automatically generated parser from file FDS.g
+in JTLV_PARESERS.<br>
+c. FDSVarWalker.java - The automatically generated tree walker from file
+FDSVarWalker.g in JTLV_PARESERS.<br>
+d. FDSStmtWalker.java - The automatically generated tree walker from
+file FDSStmtWalker.g in JTLV_PARESERS.</p>
+<p>These files exactly correspond to the four stages of processing.
+The same goes to the "edu.wis.jtlv.env.core.smv" package:<br>
+a. SMVLexer.java - The automatically generated lexer from file SMV.g in
+JTLV_PARESERS.<br>
+b. SMVParser.java - The automatically generated parser from file SMV.g
+in JTLV_PARESERS.<br>
+c. SMVVarWalker.java - The automatically generated tree walker from file
+SMVVarWalker.g in JTLV_PARESERS.<br>
+d. SMVStmtWalker.java - The automatically generated tree walker from
+file SMVStmtWalker.g in JTLV_PARESERS.<br>
+</p>
+<p>The only difference is that since SMV is a much more complex
+syntax, and I didn't want to start java programming through ANTLRWorks,
+I have created a static API. StructuralInit.java is the API for
+SMVVarWalker.java / SMVParser.java (and SMVVarWalker.g / SMV.g) to use.
+And StmtInit.java is the API for SMVStmtWalker.java (and
+SMVStmtWalker.g) to use. Both APIs exploit the other sub packages, and
+construct the SMVModule object.</p>
+<p>I still have a design dilemma whether SMVModule.java should be a
+part of the JTLV_IDE/core or a part of the JTLV_IDE/api. I would prefer
+it if the JTLV_IDE/core will be encapsulated, and won't have any
+dependencies on any other component. From that hand it would be
+reasonable to put it in the JTLV_IDE/core. From the other hand
+SMVModule.java is the basic object to end users, and I want it also to
+be a user object. For now it is at the JTLV_IDE/api component. So, the
+only dependency that the JTLV_IDE/core package currently has on external
+component is SMVModule.java at the JTLV_IDE/api component.</p>
+
+<p>
+<dl>
+	<dt><b>Version:</b></dt>
+	<dd><a HREF="../../../../edu/wis/jtlv/env/Env.html#version">"1.0.2"</a></dd>
+	<dt><b>Author:</b></dt>
+	<dd>yaniv sa'ar.</dd>
+</dl>
+<hr>
+<p>
+</body>

@@ -1,0 +1,34 @@
+MODULE main 
+	VAR
+		e : env(s.g1, s.g2);
+		s : sys(e.r1, e.r2);
+
+MODULE env(g1, g2)
+	VAR
+		r1 : boolean;
+		r2 : boolean;
+	ASSIGN
+		init(r1) := FALSE;
+		init(r2) := FALSE;
+	TRANS
+		((r1 != g1) -> (r1 = next(r1))) & 
+		((r2 != g2) -> (r2 = next(r2)));
+	JUSTICE
+		!(r1 & g1);
+		!(r2 & g2);
+
+
+MODULE sys(r1, r2)
+	VAR
+		g1 : boolean;
+		g2 : boolean; 
+	ASSIGN
+		init(g1) := FALSE;
+		init(g2) := FALSE;
+	TRANS
+		((r1 = g1) -> (g1 = next(g1))) &
+		((r2 = g2) -> (g2 = next(g2))) &
+		!(g1 & g2);
+	JUSTICE
+		r1 = g1;
+		r2 = g2;

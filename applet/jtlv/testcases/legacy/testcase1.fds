@@ -1,0 +1,10 @@
+Player sys {
+	x : boolean;
+	y : boolean;
+	z : boolean;
+}
+
+Module env {
+	x : bool;
+	y : boolean;
+}

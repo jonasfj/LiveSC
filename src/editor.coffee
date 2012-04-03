@@ -74,6 +74,9 @@ instant = false
 		$("#chartlist").height($(window).height() - cfg.toolbar.height)
 	$(window).resize()
 	
+	# Load Applet
+	@LSC.Applet.initialize()
+
 	# Create workspace paper
 	@paper = @Raphael("workspace", cfg.chart.minwidth, "400")
 	@Raphael.el.update = (params) ->
