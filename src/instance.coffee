@@ -94,7 +94,7 @@ class @LSC.Instance
 		@selected = false
 		@head.update
 			"fill-opacity":	0
-	toJSON: => name: @name, number: @number
+	toJSON: => name: @name, number: @number, env: true	#TODO: Allow some to controllable :)
 	remove: =>
 		@head.remove()
 		@line.remove()

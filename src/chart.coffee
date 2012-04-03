@@ -45,7 +45,7 @@ class @LSC.Chart
 				event.stopPropagation()
 				event.preventDefault()
 				return
-			@name = @editor.val()
+			@name = @editor.val()	# TODO: Ensure unique name with given chart
 			@title.attr
 				text: 		@name
 				opacity: 	1
@@ -253,8 +253,8 @@ class @LSC.Chart
 			@instances.push new LSC.Instance(inst.name, inst.number, @paper, @)
 		for msg in json.messages
 			for i in @instances
-				source = i		if i.number == msg.source
-				target = i		if i.number == msg.target
+				source = i		if i.name == msg.source
+				target = i		if i.name == msg.target
 			@messages.push new LSC.Message(msg.name, source, target, msg.location, @)
 		@update(true)
 	serialize: => $.toJSON(@toJSON())
