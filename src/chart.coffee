@@ -11,6 +11,7 @@ class @LSC.Chart
 		@prechart.attr
 			"stroke-dasharray": "--"
 		@postchart = @paper.path("")
+		@restrictchart = @paper.path("") #box for restricted messages
 		@isAddingMessage = false
 		@addingM = null
 		$("#workspace").css("cursor", "default")
@@ -69,6 +70,14 @@ class @LSC.Chart
 		@postchart.update
 			path: """M #{@x + cfg.margin + cfg.prechart.padding},#{@y + cfg.margin + preheight}
 					 h #{width} v #{postheight} h -#{width} z"""
+
+		restrictheight = 20;
+
+		#restricts chart
+		@restrictchart.update
+			path: """M #{@x + cfg.margin + cfg.prechart.padding},#{@y + cfg.margin+5 + preheight + postheight}
+					 h #{width} v #{restrictheight} h -#{width} z"""
+
 		#redraw instances
 		for instance in @instances
 			yi = @y + 2 * cfg.margin			# Why is there an y here???
@@ -77,7 +86,7 @@ class @LSC.Chart
 		#redraw messages
 		for message in @messages
 			message.update()
-		height = @y + cfg.margin + preheight + postheight + cfg.margin
+		height = @y + cfg.margin + preheight + postheight + cfg.margin + restrictheight
 		#redraw title
 		@title.attr
 			text: @name
