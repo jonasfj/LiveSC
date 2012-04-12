@@ -6,7 +6,8 @@ class @LSC.Chart
 		@messages = []
 		@instances = []
 		@lineloc = 1			#Location between pre- and postchart
-		@locations = 2			#number of locations in chart
+		@locations = 3			#number of locations in chart
+		@resloc = 2				#Location between post- and restrictchart
 		@prechart = @paper.path("")
 		@prechart.attr
 			"stroke-dasharray": "--"
@@ -65,17 +66,17 @@ class @LSC.Chart
 					 l -#{cfg.prechart.padding} #{preheight/2}
 					 h -#{width}
 					 l -#{cfg.prechart.padding} -#{preheight/2} z"""
-		postheight = cfg.margin + cfg.location.height * (@locations - @lineloc)
+		postheight = 2*cfg.margin + cfg.location.height * (@resloc - @lineloc)
 		#redraw body
 		@postchart.update
 			path: """M #{@x + cfg.margin + cfg.prechart.padding},#{@y + cfg.margin + preheight}
 					 h #{width} v #{postheight} h -#{width} z"""
 
-		restrictheight = 20;
+		restrictheight = cfg.location.height * (@locations - @resloc) - cfg.location.height;
 
 		#restricts chart
 		@restrictchart.update
-			path: """M #{@x + cfg.margin + cfg.prechart.padding},#{@y + cfg.margin+5 + preheight + postheight}
+			path: """M #{@x + cfg.margin + cfg.prechart.padding},#{@y + cfg.margin + preheight + postheight}
 					 h #{width} v #{restrictheight} h -#{width} z"""
 
 		#redraw instances
@@ -169,6 +170,8 @@ class @LSC.Chart
 		m = new LSC.Message(name, source, target, location, @)
 		msg.location += 1 for msg in @messages when msg.location >= location
 		@lineloc += 1 if @lineloc >= location
+		# update restrict location index.
+		@resloc += 1 if location <= @resloc
 		@messages.push m
 		@locations = @locations + 1
 		@update()
@@ -199,18 +202,24 @@ class @LSC.Chart
 		return loc
 	moveMessage: (message, location) =>		# moves a message
 		prev = message.location
+		#move message down
 		if prev < location
 			for m in @messages
 				if prev <= m.location and m.location <= location
 					m.location -= 1
 			if prev <= @lineloc and @lineloc <= location
 				@lineloc -= 1
+			if prev <= @resloc and @resloc <= location
+				@resloc -= 1
+		#move message up
 		if prev > location
 			for m in @messages
 				if location <= m.location and m.location <= prev
 					m.location += 1
 			if location <= @lineloc and @lineloc <= prev
 				@lineloc += 1
+			if location <= @resloc and @resloc <= prev
+				@resloc += 1
 		message.location = location
 		@update()
 	clearSelection: (e) =>
@@ -228,6 +237,7 @@ class @LSC.Chart
 		@messages = (msg for msg in @messages when msg != m)
 		m.remove()
 		@lineloc -= 1 if m.location < @lineloc
+		@resloc -= 1 #TODO: check if this works
 		@locations -= 1
 		delete m
 	deleteInstance: (i) =>
@@ -245,18 +255,21 @@ class @LSC.Chart
 	toJSON: =>
 			name:			@name
 			lineloc:		@lineloc
+			resloc:			@resloc
 			locations:		@locations
 			instances:		(i.toJSON() for i in @instances)
 			messages:		(m.toJSON() for m in @messages)
 	@emptyJSON:
 		name: "Untitled Chart"
 		lineloc:			1
-		locations:			2
+		resloc:				2
+		locations:			3
 		instances:			[]
 		messages:			[]
 	fromJSON: (json) =>
 		@name = json.name
 		@lineloc = json.lineloc
+		@resloc = json.resloc
 		@locations = json.locations
 		for inst in json.instances
 			@instances.push new LSC.Instance(inst.name, inst.number, @paper, @)
