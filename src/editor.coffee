@@ -173,9 +173,7 @@ download = =>
 	window.open(dataurl, "_blank")
 
 # Check if event carries file
-hasFile = (event) ->
-	return true if event?.dataTransfer?.files?.length > 0
-	return false
+hasFile = (event) -> event?.dataTransfer?.types? and "Files" in event?.dataTransfer?.types
 
 # Drag effect state
 dragEffect = dragIcon = dragLeftTimeout = null
@@ -183,7 +181,7 @@ dragEffectLeaving = false
 
 # Add drag effect, if not already there
 dragEffectAdd = (event) ->
-	return if event? and not hasFile(event, "add")
+	return if event? and not hasFile(event)
 	if dragLeftTimeout?
 		clearTimeout(dragLeftTimeout)
 		dragLeftTimeout = null
@@ -222,14 +220,14 @@ dragEffectRemove = ->
 			dragEffectLeaving = false
 
 dragFileOver = (event) ->
-	return unless hasFile(event, "over")
+	return unless hasFile(event)
 	dragEffectAdd()		# Ensure drag effect
 	event.stopPropagation()
 	event.preventDefault()
 	event.dataTransfer.dropEffect = 'copy'
 
 dropFile = (event) =>
-	return unless hasFile(event, "drop")
+	return unless hasFile(event)
 	dragEffectLeave()	# Remove drag effect
 	event.stopPropagation()
 	event.preventDefault()
