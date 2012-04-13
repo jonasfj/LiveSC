@@ -74,6 +74,10 @@ class @LSC.Instance
 	unedit: (event) =>				#End name edit
 		if @editor?
 			return if @editor.val() == ""
+			inst = @lsc.getInstanceByName(@editor.val())
+			if inst? and inst.number != @number
+				@editor.val(@name)
+				return
 			@name = @editor.val()
 			@text.attr
 				text: @name

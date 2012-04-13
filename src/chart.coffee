@@ -253,6 +253,10 @@ class @LSC.Chart
 		@deleteMessage(m) for m in @messages when m.selected
 		@deleteInstance(i) for i in @instances when i.selected
 		@update()
+	getInstanceByName: (instanceName) =>
+		for i in @instances when i.name == instanceName
+			return i
+		return null
 	toJSON: =>
 			name:			@name
 			lineloc:		@lineloc
