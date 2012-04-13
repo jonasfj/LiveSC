@@ -12,7 +12,7 @@ class @LSC.Message
 		@arrow = @lsc.paper.path("")
 		@arrow.attr
 			"stroke-width": 	2
-			fill: 				"black"
+			stroke: 			"black"
 			cursor: 			"pointer"
 		@text = @lsc.paper.text(0, 0, @name)
 		@arrow.hover(@hoverIn, @hoverOut)
@@ -50,9 +50,14 @@ class @LSC.Message
 		xt = @lsc.numberX(@target.number)
 		ar_w = cfg.arrow.width
 		ar_h = cfg.arrow.height
+		width = Math.abs(xs - xt)
 		if xs < xt
 			p = "M #{xs},#{y} h #{xt - xs - ar_w} l 0,#{ar_h} #{ar_w},-#{ar_h} -#{ar_w},-#{ar_h} 0,#{ar_h}"
 			tx = xs + cfg.instance.width / 2
+		else if xs == xt # self-looping message
+			p = "M #{xs},#{y} h #{cfg.instance.padding} v #{5} h #{-cfg.instance.padding+ar_w} l 0,#{ar_h} -#{ar_w},-#{ar_h} #{ar_w},-#{ar_h} 0,#{ar_h}"
+			tx = xs + 2*cfg.margin
+			width = cfg.instance.padding
 		else
 			p = "M #{xs},#{y} h -#{xs - xt - ar_w} l 0,#{ar_h} -#{ar_w},-#{ar_h} #{ar_w},-#{ar_h} 0,#{ar_h}"
 			tx = xs - cfg.instance.width / 2
@@ -65,7 +70,7 @@ class @LSC.Message
 		@rect.update
 			x: Math.min(xs, xt) - cfg.margin
 			y: y - (cfg.location.height - cfg.margin) / 2 - 10 / 2
-			width: Math.abs(xs - xt) + 2 * cfg.margin
+			width: width + 2 * cfg.margin
 			height: cfg.location.height - cfg.margin
 	drag: (x, y, event) => 			#Start drag
 	move: (dx, dy, x, y, event) => 	#Move (during drag)
@@ -79,6 +84,9 @@ class @LSC.Message
 			xt = @lsc.numberX(@target.number)
 			if xs < xt
 				x = xs + cfg.arrow.width
+			# if self-looping message
+			if xs == xt
+				x = xs - cfg.instance.width/2 + 3*cfg.margin
 			if xs > xt
 				x = xs - cfg.instance.width + cfg.arrow.width
 			@editor = $("<input type='text'/>")

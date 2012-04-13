@@ -142,13 +142,14 @@ class @LSC.Chart
 			x = LSC.pageX2RaphaelX(event.pageX)
 			t_num = @xNumber(x)
 			loc = @GetLocation(LSC.pageY2RaphaelY(event.pageY))
+			# Check for self-looping message
 			if t_num == @addingM.source.number
 				s_num = @addingM.source.number
 				if @numberX(s_num) > x
-					t_num = s_num - 1
+					t_num = s_num #- 1, uncomment to disallow self-loops
 					t_num = 1 if t_num < 0
 				else
-					t_num = s_num + 1
+					t_num = s_num #+ 1, uncomment to disallow self-loops
 					t_num = s_num - 1 if t_num >= @instances.length
 			target = i for i in @instances when i.number == t_num
 			if @addingM.target != target or loc != @addingM.location
