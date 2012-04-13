@@ -1,7 +1,7 @@
 @LSC ?= {}
 
 class @LSC.Instance
-	constructor: (@name, @number, @paper, @lsc) ->
+	constructor: (@name, @number, @env, @paper, @lsc) ->
 		@selected = false
 		@head = @paper.rect(0,0,0,0)
 		@head.attr
@@ -25,6 +25,11 @@ class @LSC.Instance
 	update: (@y, height) =>
 		x = @lsc.numberX(@number)
 		pad = cfg.instance.padding
+
+		if @env
+			@head.attr
+				"stroke-dasharray":"."
+
 		@head.update
 			x: 			x - cfg.instance.head.width / 2
 			y: 			y 
@@ -59,6 +64,7 @@ class @LSC.Instance
 				height:			cfg.instance.head.height - cfg.margin
 			@editor.addClass("editor centered")
 			@editor.appendTo("#workspace")
+
 			@text.attr
 				text: ""
 				opacity: 0
@@ -94,7 +100,7 @@ class @LSC.Instance
 		@selected = false
 		@head.update
 			"fill-opacity":	0
-	toJSON: => name: @name, number: @number, env: true	#TODO: Allow some to controllable :)
+	toJSON: => name: @name, number: @number, env: @env #TODO: Allow some to controllable :)
 	remove: =>
 		@head.remove()
 		@line.remove()

@@ -178,8 +178,8 @@ class @LSC.Chart
 		@update()
 		m.edit()		if edit
 		return m
-	createInstance: =>
-		i = new LSC.Instance("New instance", @instances.length, @paper, @)
+	createInstance: (env) =>
+		i = new LSC.Instance("New instance", @instances.length, env, @paper, @)
 		@instances.push(i)
 		@update()
 		i.edit()

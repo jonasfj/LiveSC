@@ -11,11 +11,11 @@ body{
 	overflow:		hidden;
 }
 
-input.centered{
+input.centered {
 	text-align:		center;
 }
 
-input.editor{
+input.editor {
 	position:		absolute;
 	font-family:	arial;
 	font-size:		10px;

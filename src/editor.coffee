@@ -124,7 +124,8 @@ instant = false
 	#### Initialize toolbar
 	@toolbar = new @LSC.Toolbar(@Raphael("toolbar", "100%", cfg.toolbar.height))
 	new @LSC.Button("piechart", "Add chart", toolbar).click 			-> addChart()
-	new @LSC.Button("plus", "Add instance", toolbar).click 				-> CurrentChart?.createInstance()
+	new @LSC.Button("plus", "Add controller instance", toolbar).click 	-> CurrentChart?.createInstance(false)
+	new @LSC.Button("globe", "Add environment instance", toolbar).click -> CurrentChart?.createInstance(true)
 	new @LSC.Button("exchange", "Add message", toolbar).click 			-> CurrentChart?.addMessage()
 	new @LSC.Button("trash", "Delete selection", toolbar).click 		-> CurrentChart?.deleteSelection()
 	new @LSC.Button("cloudDown", "Download project", toolbar).click		download
