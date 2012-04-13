@@ -273,7 +273,7 @@ class @LSC.Chart
 		@resloc = json.resloc
 		@locations = json.locations
 		for inst in json.instances
-			@instances.push new LSC.Instance(inst.name, inst.number, @paper, @)
+			@instances.push new LSC.Instance(inst.name, inst.number, inst.env, @paper, @)
 		for msg in json.messages
 			for i in @instances
 				source = i		if i.name == msg.source

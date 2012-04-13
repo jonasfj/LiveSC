@@ -134,7 +134,7 @@ instant = false
 	addChart()
 
 	# Initialize applet
-	@LSC.Applet.initialize()
+	#@LSC.Applet.initialize()
 
 # Initialize editor
 $ LSC.initialize
