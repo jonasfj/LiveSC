@@ -8,41 +8,49 @@ StartSMV = ->
 	_c = ""
 	return true
 
+tab = "    "
+pad = (str, len) ->
+	str = str + ""
+	str + (" " for i in [0..Math.max(0, len - 1 - str.length)]).join('')
+align = 100
+
 Module = (name, params) ->
-	_c += "MODULE #{name} (#{params.join(', ')})\n"
+	_c += "MODULE #{name} (#{params.join(', ')})\n\n"
 
 Var = (declare) ->
 	_c += "VAR\n"
 	declare()
+	_c += "\n"
 
 Declare = (name, type) ->
 	if type instanceof Array
 		type = "{#{type.join(', ')}}"
-	_c += "\t#{name} : #{type};\n"
+	_c += tab + "#{pad(name, align)} : #{type};\n"
 
 Assign = (assign) ->
 	_c += "ASSIGN\n"
 	assign()
+	_c += "\n"
 
 Init = (name, value) ->
 	if value instanceof Array
 		value = "{#{value.join(', ')}}"
-	_c += "\tinit(#{name}) := #{value};\n"
+	_c += tab + "init(#{pad(name + ')', align - 5)} := #{value};\n"
 
 Next = (name, value) ->
 	unless value instanceof Function
 		val = value
 		value = -> Case "1", val
-	_c += "\tnext(#{name}) := case\n"
+	_c += tab + "next(#{name}) := case\n"
 	value()
-	_c += "\tesac;\n"
+	_c += tab + "esac;\n"
 
 Case = (expr, value) ->
 	if value instanceof Array
 		value = "{#{value.join(', ')}}"
 	if expr instanceof Array
 		expr = expr.join(' & ')
-	_c += "\t\t#{expr} : #{value};\n"
+	_c += tab + tab + "#{pad(expr, align - 4)} : #{value};\n"
 
 OutputSMV = ->
 	retval = _c
@@ -53,7 +61,7 @@ OutputSMV = ->
 
 # Location variable
 Loc = (inst, chart) ->
-	unless inst instanceof String
+	unless typeof inst is 'string'
 		inst = inst.name
 	return "Loc_#{inst}_#{chart.number}"
 
@@ -66,10 +74,7 @@ L = (location) -> "L#{location}"
 # Message variable name
 Msg = (m) -> "#{m.name}_#{m.target}_#{m.source}"
 
-@LSC.toSMV = (json) ->
-	# Clone json, so we can add arbitrary properties without bad side effects
-	charts = $.secureEvalJSON($.toJSON(json))
-
+@LSC.toSMV = (charts) ->
 	env = instances: [], instanceNames: [], messages: [], messageNames: []
 	sys = instances: [], instanceNames: [], messages: [], messageNames: []
 	for chart, i in charts
@@ -82,7 +87,8 @@ Msg = (m) -> "#{m.name}_#{m.target}_#{m.source}"
 			obj = if inst.env then env else sys
 			if inst.name not in obj.instanceNames
 				obj.instanceNames.push inst.name
-				obj.instances.push inst
+			obj.instances.push inst
+			inst.chart = chart
 			# Add list of locations in each instance to instances
 			inst.locations = [0]
 			inst.locations.push m.location				for m in chart.messages when inst.name in [m.source, m.target]
@@ -93,28 +99,29 @@ Msg = (m) -> "#{m.name}_#{m.target}_#{m.source}"
 		for m in chart.messages
 			chart.messageNames.push Msg m				if Msg m not in chart.messageNames
 			obj = if m.source in env.instanceNames then env else sys
-			if Msg m not in obj.messagesNames
-				obj.messagesNames.push Msg m
+			if Msg m not in obj.messageNames
+				obj.messageNames.push Msg m
 				obj.messages.push m
-			m.charts = (c for c in charts when Msg m in (Msg msg for msg in c.messages))
-			m.prevSourceLoc = Math.max (l for l in inst.locations when l < m.location for inst in chart.instances when inst.name is m.source)...
-			m.prevTargetLoc = Math.max (l for l in inst.locations when l < m.location for inst in chart.instances when inst.name is m.target)...
+			m.charts = (c for c in charts when (Msg m) in (Msg msg for msg in c.messages))
+			m.prevSourceLoc = m.prevTargetLoc = 0
+			for inst in chart.instances
+				m.prevSourceLoc = Math.max m.prevSourceLoc, (l for l in inst.locations when l < m.location)...			if inst.name is m.source
+				m.prevTargetLoc = Math.max m.prevTargetLoc, (l for l in inst.locations when l < m.location)...			if inst.name is m.target
 
 	return null if not StartSMV()
-
 
 	Module "Input", [(Loc inst, chart for inst in chart.instances when not inst.env for chart in charts)...,
 					 sys.messageNames..., "current_object"]
 
 	Var ->
-		Declare m, 					"boolean"										for m in env.messagesNames
+		Declare msg, 				"boolean"										for msg in env.messageNames
 		Declare "gbuchi",			"0..2"
 		Declare (Active chart),		"boolean"										for chart in charts
 		Declare "envreq",			env.instanceNames
 		Declare (Loc inst, chart),	(L loc for loc in inst.locations)				for inst in chart.instances when  inst.env for chart in charts
 
 	Assign ->
-		Init m,						0												for m in env.messagesNames
+		Init msg,					0												for msg in env.messageNames
 		Init (Loc inst, chart),		(L 0)											for inst in chart.instances when inst.env for chart in charts
 		Init "gbuchi",				0
 		Init (Active chart),		0												for chart in charts
@@ -128,9 +135,9 @@ Msg = (m) -> "#{m.name}_#{m.target}_#{m.source}"
 			Case ["gbuchi = 2", notCurrent...],										0
 			Case 1,																	"gbuchi"
 
-		Next m, (->
+		Next (Msg m), (->
 			notActive = ("#{Active chart} = 0" for chart in m.charts)
-			notOthers = ("next(#{Msg m2}) = 0" for m2 in [env.messages..., sys.messages...] when (Msg m2) isnt (Msg m))
+			notOthers = ("next(#{msg}) = 0" for msg in [env.messageNames..., sys.messageNames...] when msg isnt (Msg m))
 			Case "next(current_object) != #{m.source}",								0
 			Case [notOthers..., notActive...],										[0, 1]
 			Case 1,																	0
@@ -154,7 +161,7 @@ Msg = (m) -> "#{m.name}_#{m.target}_#{m.source}"
 				  "#{Loc m.source, chart} = #{L m.prevSourceLoc}",
 				  "next(#{Loc m.source, chart}) = #{L m.location}",
 				  "next(#{Msg m}) = 1"],											(L m.location)		for m in chart.messages when m.target is inst.name
-			cantFire = (m) -> "(#{Loc m.source, chart} != #{m.prevSourceLoc} | #{Loc m.target, chart} != #{m.prevTargetLoc})"
+			cantFire = (m) -> "(#{Loc m.source, chart} != #{L m.prevSourceLoc} | #{Loc m.target, chart} != #{L m.prevTargetLoc})"
 			Case ["#{Loc inst, chart} in {#{(L l for l in inst.locations when l < chart.lineloc).join(', ')}}",
 				  (cantFire(m) for m in chart.messages when (Msg m) is msg)...,
 				  "#{msg} = 1"],													(L 0)				for msg in chart.messageNames
@@ -167,12 +174,12 @@ Msg = (m) -> "#{m.name}_#{m.target}_#{m.source}"
 					  (Loc inst, chart for inst in chart.instances when inst.env for chart in charts)...]
 	
 	Var ->
-		Declare (Msg m), 					"boolean"										for m in sys.messages
+		Declare msg, 						"boolean"										for msg in sys.messageNames
 		Declare (Loc inst, chart),			(L l for l in inst.locations)					for inst in chart.instances when not inst.env for chart in charts
 		Declare "current_process",			[sys.instanceNames..., env.instanceNames...]
 	
 	Assign ->
-		Init (Msg m),						0												for m in sys.messages
+		Init msg,							0												for msg in sys.messageNames
 		Init "current_process",				["envreq", sys.instanceNames...]
 		Init (Loc inst, chart),				(L 0)											for inst in chart.instances when not inst.env for chart in charts
 		
@@ -180,7 +187,7 @@ Msg = (m) -> "#{m.name}_#{m.target}_#{m.source}"
 
 		Next (Msg m), (->
 			Case "next(current_object) != #{m.source}",								0
-			notOthers = ("next(#{Msg m2}) = 0" for m2 in [env.messages..., sys.messages...] when (Msg m2) isnt (Msg m))
+			notOthers = ("next(#{msg}) = 0" for msg in [env.messageNames..., sys.messageNames...] when msg isnt (Msg m))
 			canfire = (m) -> ["#{Loc m.source, chart} = #{m.prevSourceLoc}",
 							  "#{Loc m.target, chart} = #{m.prevTargetLoc}",
 							  "next(#{Loc m.source, chart}) = #{m.location}",
@@ -207,9 +214,6 @@ Msg = (m) -> "#{m.name}_#{m.target}_#{m.source}"
 		)	for inst in chart.instances when not inst.env for chart in charts
 	
 	return OutputSMV()
-
-
-
 
 
 
