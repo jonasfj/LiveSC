@@ -129,12 +129,13 @@ instant = false
 	new @LSC.Button("exchange", "Add message", toolbar).click 			-> CurrentChart?.addMessage()
 	new @LSC.Button("trash", "Delete selection", toolbar).click 		-> CurrentChart?.deleteSelection()
 	new @LSC.Button("cloudDown", "Download project", toolbar).click		download
+	new @LSC.Button("arrowright", "Test the project", toolbar).click	test
 
 	# Add new empty chart
 	addChart()
 
 	# Initialize applet
-	#@LSC.Applet.initialize()
+	@LSC.Applet.initialize()
 
 # Initialize editor
 $ LSC.initialize
@@ -261,3 +262,10 @@ dropFile = (event) =>
 @LSC.unescapeName = (name) ->
 	return unescape(name)
 	
+
+test = =>
+	if @CurrentChart?
+		@Charts[@CurrentIndex] = @CurrentChart.toJSON()
+	data = @LSC.toSMV($.secureEvalJSON($.toJSON(@Charts)))
+	dataurl = "data:application/lsc+json;base64,#{$.base64Encode(data)}"
+	window.open(dataurl, "_blank")
