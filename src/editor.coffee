@@ -170,7 +170,7 @@ download = =>
 		@Charts[@CurrentIndex] = @CurrentChart.toJSON()
 	# Put everything into JSON
 	data = $.toJSON
-		title:			@toolbar.getTitle()
+		title:			LSC.escapeName(@toolbar.getTitle())
 		charts:			@Charts
 	# Open data URL
 	dataurl = "data:application/lsc+json;base64,#{$.base64Encode(data)}"
@@ -246,9 +246,18 @@ dropFile = (event) =>
 		data = $.secureEvalJSON(reader.result)
 		for item in data.charts
 			addChart(item, false)
-		@toolbar.setTitle(data.title)
+		@toolbar.setTitle(LSC.unescapeName(data.title))
 		if @Charts.length == 0
 			addChart()
 		else
 			switchChart(0)
 	reader.readAsText(file)
+
+# escapes special characters
+@LSC.escapeName = (name) ->
+	return escape(name)
+
+# unescapes name
+@LSC.unescapeName = (name) ->
+	return unescape(name)
+	

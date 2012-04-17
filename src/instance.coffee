@@ -74,11 +74,12 @@ class @LSC.Instance
 	unedit: (event) =>				#End name edit
 		if @editor?
 			return if @editor.val() == ""
-			inst = @lsc.getInstanceByName(@editor.val())
+			inst = @lsc.getInstanceByName(@editor.val().trim())
 			if inst? and inst.number != @number
 				@editor.val(@name)
+				@editor.css("background","yellow").focus()
 				return
-			@name = @editor.val()
+			@name = @editor.val().trim()
 			@text.attr
 				text: @name
 				opacity: 1
@@ -104,7 +105,7 @@ class @LSC.Instance
 		@selected = false
 		@head.update
 			"fill-opacity":	0
-	toJSON: => name: @name, number: @number, env: @env
+	toJSON: => name: LSC.escapeName(@name), number: @number, env: @env
 	remove: =>
 		@head.remove()
 		@line.remove()
