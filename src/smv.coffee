@@ -110,8 +110,14 @@ Msg = (m) -> "#{m.name}_#{m.target}_#{m.source}"
 
 	return null if not StartSMV()
 
-	Module "Input", [(Loc inst, chart for inst in chart.instances when not inst.env for chart in charts)...,
-					 sys.messageNames..., "current_object"]
+	Module "main", []
+	Var ->
+		outparams = [(Loc inst, inst.chart for inst in sys.instances)..., sys.messageNames..., 'current_object']
+		Declare 'o', "output(#{('i.#{v}' for v in outparams).join(', ')})"
+		inparams = [(Active chart for chart in charts)..., env.messageNames..., 'gbuchi', 'envreq', (Loc inst, inst.chart for inst in env.instances)...]
+		Declare 'i', "input(#{('o.#{v}' for v in inparams).join(', ')})"
+
+	Module "input", [(Loc inst, inst.chart for inst in sys.instances)..., sys.messageNames..., "current_object"]
 
 	Var ->
 		Declare msg, 				"boolean"										for msg in env.messageNames
@@ -169,21 +175,19 @@ Msg = (m) -> "#{m.name}_#{m.target}_#{m.source}"
 		)	for inst in chart.instances when inst.env for chart in charts
 
 
-	Module "Output", [(Active chart for chart in charts)...,
-					  env.messageNames..., "gbuchi", "envreq",
-					  (Loc inst, chart for inst in chart.instances when inst.env for chart in charts)...]
+	Module "output", [(Active chart for chart in charts)..., env.messageNames..., "gbuchi", "envreq", (Loc inst, inst.chart for inst in env.instances)...]
 	
 	Var ->
 		Declare msg, 						"boolean"										for msg in sys.messageNames
 		Declare (Loc inst, chart),			(L l for l in inst.locations)					for inst in chart.instances when not inst.env for chart in charts
-		Declare "current_process",			[sys.instanceNames..., env.instanceNames...]
+		Declare "current_object",			[sys.instanceNames..., env.instanceNames...]
 	
 	Assign ->
 		Init msg,							0												for msg in sys.messageNames
-		Init "current_process",				["envreq", sys.instanceNames...]
+		Init "current_object",				["envreq", sys.instanceNames...]
 		Init (Loc inst, chart),				(L 0)											for inst in chart.instances when not inst.env for chart in charts
 		
-		Next "current_process",				["envreq", sys.instanceNames...]
+		Next "current_object",				["envreq", sys.instanceNames...]
 
 		Next (Msg m), (->
 			Case "next(current_object) != #{m.source}",								0
