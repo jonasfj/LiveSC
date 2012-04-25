@@ -253,8 +253,12 @@ class @LSC.Chart
 		@deleteMessage(m) for m in @messages when m.selected
 		@deleteInstance(i) for i in @instances when i.selected
 		@update()
+	getInstanceByName: (instanceName) =>
+		for i in @instances when i.name == instanceName
+			return i
+		return null
 	toJSON: =>
-			name:			@name
+			name:			LSC.escapeName(@name)
 			lineloc:		@lineloc
 			resloc:			@resloc
 			locations:		@locations
@@ -268,17 +272,17 @@ class @LSC.Chart
 		instances:			[]
 		messages:			[]
 	fromJSON: (json) =>
-		@name = json.name
+		@name = LSC.unescapeName(json.name)
 		@lineloc = json.lineloc
 		@resloc = json.resloc
 		@locations = json.locations
 		for inst in json.instances
-			@instances.push new LSC.Instance(inst.name, inst.number, inst.env, @paper, @)
+			@instances.push new LSC.Instance(LSC.unescapeName(inst.name), inst.number, inst.env, @paper, @)
 		for msg in json.messages
 			for i in @instances
 				source = i		if i.name == msg.source
 				target = i		if i.name == msg.target
-			@messages.push new LSC.Message(msg.name, source, target, msg.location, @)
+			@messages.push new LSC.Message(LSC.unescapeName(msg.name), LSC.unescapeName(source), LSC.unescapeName(target), msg.location, @)
 		@update(true)
 	serialize: => $.toJSON(@toJSON())
 	deserialize: (data) => @fromJSON($.secureEvalJSON(data))

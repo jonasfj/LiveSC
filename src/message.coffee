@@ -112,7 +112,7 @@ class @LSC.Message
 				opacity: 1
 			@editor.remove()
 			@editor = null
-	toJSON: => name: @name, location: @location, source: @source.name, target: @target.name
+	toJSON: => name: LSC.escapeName(@name), location: @location, source: LSC.escapeName(@source.name), target: LSC.escapeName(@target.name)
 	remove: =>
 		@text.remove()
 		@rect.remove()
