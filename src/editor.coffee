@@ -257,11 +257,11 @@ dropFile = (event) =>
 
 # escapes special characters
 @LSC.escapeName = (name) ->
-	return escape(name)
+	return name #escape(name)
 
 # unescapes name
 @LSC.unescapeName = (name) ->
-	return unescape(name)
+	return name #unescape(name)
 	
 getSMV = =>
 	if @CurrentChart?
