@@ -15,7 +15,10 @@ pad = (str, len) ->
 align = 100
 
 Module = (name, params) ->
-	_c += "MODULE #{name} (#{params.join(', ')})\n\n"
+	if params.length > 0
+		_c += "MODULE #{name} (#{params.join(', ')})\n\n"
+	else
+		_c += "MODULE #{name}\n\n"
 
 Var = (declare) ->
 	_c += "VAR\n"
@@ -72,7 +75,7 @@ Active = (chart) -> "active_#{chart.number}"
 L = (location) -> "L#{location}"
 
 # Message variable name
-Msg = (m) -> "#{m.name}_#{m.target}_#{m.source}"
+Msg = (m) -> "#{m.name}_#{m.source}_#{m.target}"
 
 @LSC.toSMV = (charts) ->
 	env = instances: [], instanceNames: [], messages: [], messageNames: []
@@ -135,10 +138,10 @@ Msg = (m) -> "#{m.name}_#{m.target}_#{m.source}"
 
 		Next "gbuchi", ->
 			notActive = ("#{Active chart} = 0" for chart in charts)
-			notCurrent = ("current_object != #{inst}" for inst in env.instanceNames)
+			isEnvObj = "(" + ("current_object = #{inst}" for inst in env.instanceNames).join(' | ') + ")"
 			Case "gbuchi = 0",														1
 			Case ["gbuchi = 1", notActive...],										2
-			Case ["gbuchi = 2", notCurrent...],										0
+			Case ["gbuchi = 2", isEnvObj],											0
 			Case 1,																	"gbuchi"
 
 		Next (Msg m), (->
@@ -158,7 +161,7 @@ Msg = (m) -> "#{m.name}_#{m.target}_#{m.source}"
 		)	for chart in charts
 
 		Next (Loc inst, chart), (->
-			Case ["#{Active chart} = 0", "#{Loc inst, chart} = #{L inst.maxLoc}"],	(L 0)
+			Case ["#{Active chart} = 1", "next(#{Active chart}) = 0"],				(L 0)
 			Case ["#{Loc inst, chart} = #{L m.prevSourceLoc}",
 				  "#{Loc m.target, chart} = #{L m.prevTargetLoc}",
 				  "next(#{Loc m.target, chart}) = #{L m.location}",
@@ -167,10 +170,10 @@ Msg = (m) -> "#{m.name}_#{m.target}_#{m.source}"
 				  "#{Loc m.source, chart} = #{L m.prevSourceLoc}",
 				  "next(#{Loc m.source, chart}) = #{L m.location}",
 				  "next(#{Msg m}) = 1"],											(L m.location)		for m in chart.messages when m.target is inst.name
-			cantFire = (m) -> "(#{Loc m.source, chart} != #{L m.prevSourceLoc} | #{Loc m.target, chart} != #{L m.prevTargetLoc})"
-			Case ["#{Loc inst, chart} in {#{(L l for l in inst.locations when l < chart.lineloc).join(', ')}}",
-				  (cantFire(m) for m in chart.messages when (Msg m) is msg)...,
-				  "#{msg} = 1"],													(L 0)				for msg in chart.messageNames
+			cantFireM = (m) -> "(#{Loc m.source, chart} != #{L m.prevSourceLoc} | #{Loc m.target, chart} != #{L m.prevTargetLoc})"
+			cantFire = (m1) -> (cantFireM(m2) for m2 in chart.messages when (Msg m2) is (Msg m1)).join(' & ')
+			reset = "(" + ("(#{cantFire(m)} & next(#{Msg m}) = 1)" for m in [sys.messages..., env.messages...]).join(' | ') + ")"
+			Case ["#{Active chart} = 0", reset],									(L 0)
 			Case 1,																	(Loc inst, chart)
 		)	for inst in chart.instances when inst.env for chart in charts
 
@@ -192,16 +195,19 @@ Msg = (m) -> "#{m.name}_#{m.target}_#{m.source}"
 		Next (Msg m), (->
 			Case "next(current_object) != #{m.source}",								0
 			notOthers = ("next(#{msg}) = 0" for msg in [env.messageNames..., sys.messageNames...] when msg isnt (Msg m))
-			canfire = (m) -> ["#{Loc m.source, chart} = #{L m.prevSourceLoc}",
-							  "#{Loc m.target, chart} = #{L m.prevTargetLoc}",
-							  "next(#{Loc m.source, chart}) = #{L m.location}",
-							  "next(#{Loc m.target, chart}) = #{L m.location}"]
-			Case [canfire(m2)..., "#{Active chart} = 1", notOthers...],				1	for m2 in chart.messages when (Msg m2) is (Msg m) for chart in m.charts
+			canFireM = (chart, m2) ->  ["#{Loc m2.source, chart} = #{L m2.prevSourceLoc}",
+										"#{Loc m2.target, chart} = #{L m2.prevTargetLoc}",
+										"next(#{Loc m2.source, chart}) = #{L m2.location}",
+										"next(#{Loc m2.target, chart}) = #{L m2.location}"].join(" & ")
+			canFire = (chart) -> (canFireM(chart, m2) for m2 in chart.messages when (Msg m) is (Msg m2)).join(' | ')
+			oneActive = "(" + ("#{Active chart} = 1" for chart in m.charts).join(' | ') + ")"
+			inactiveOrFire = ("(#{Active chart} = 0 | (#{canFire(chart)}))" for chart in m.charts)
+			Case [oneActive, inactiveOrFire..., notOthers...],							1
 			Case 1,																	0
 		)	for m in sys.messages
 	
 		Next (Loc inst, chart), (->
-			Case ["#{Active chart} = 0", "#{Loc inst, chart} = #{L inst.maxLoc}"],	(L 0)
+			Case ["#{Active chart} = 1", "next(#{Active chart}) = 0"],				(L 0)
 			Case ["#{Loc inst, chart} = #{L m.prevSourceLoc}",
 				  "#{Loc m.target, chart} = #{L m.prevTargetLoc}",
 				  "next(#{Loc m.target, chart}) = #{L m.location}",
@@ -210,10 +216,10 @@ Msg = (m) -> "#{m.name}_#{m.target}_#{m.source}"
 				  "#{Loc m.source, chart} = #{L m.prevSourceLoc}",
 				  "next(#{Loc m.source, chart}) = #{L m.location}",
 				  "next(#{Msg m}) = 1"],											(L m.location)		for m in chart.messages when m.target is inst.name
-			cantFire = (m) -> "(#{Loc m.source, chart} != #{L m.prevSourceLoc} | #{Loc m.target, chart} != #{L m.prevTargetLoc})"
-			Case ["#{Loc inst, chart} in {#{(L l for l in inst.locations when l < chart.lineloc).join(', ')}}",
-				  (cantFire(m) for m in chart.messages when (Msg m) is msg)...,
-				  "#{msg} = 1"],													(L 0)				for msg in chart.messageNames
+			cantFireM = (m) -> "(#{Loc m.source, chart} != #{L m.prevSourceLoc} | #{Loc m.target, chart} != #{L m.prevTargetLoc})"
+			cantFire = (m1) -> (cantFireM(m2) for m2 in chart.messages when (Msg m2) is (Msg m1)).join(' & ')
+			reset = "(" + ("(#{cantFire(m)} & next(#{Msg m}) = 1)" for m in [sys.messages..., env.messages...]).join(' | ') + ")"
+			Case ["#{Active chart} = 0", reset],									(L 0)
 			Case 1,																	(Loc inst, chart)
 		)	for inst in chart.instances when not inst.env for chart in charts
 	
