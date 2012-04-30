@@ -6,7 +6,7 @@ import net.sf.javabdd._
 import io._
 
 object Main extends App {
-	val lines = io.Source.fromFile("WTF.smv").mkString
+	val lines = io.Source.fromFile("TS.smv").mkString
 	println(lines)
 
 	// Load Transition systems

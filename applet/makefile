@@ -7,7 +7,10 @@ applet.jar: jtlv.jar applet.scala
 Main.jar: jtlv.jar Main.scala
 	rm -f Main.jar
 	scalac Main.scala -d Main.jar -classpath jtlv.jar:$(LIBS)
-test: Main.jar
+test: Main.jar ../examples/WTF.lsc
+	clear
+	@echo "-------------------------------------------------------------------------------------------------"
+	coffee makeSMV.coffee ../examples/WTF.lsc
 	java -cp Main.jar:jtlv.jar:libs/scala-library.jar:$(LIBS) Main
 shrink: jtlv.jar
 	proguard @proguard.options -libraryjars $JAVA_HOME/jre/lib/rt.jar

@@ -52,7 +52,20 @@ Case = (expr, value) ->
 	if value instanceof Array
 		value = "{#{value.join(', ')}}"
 	if expr instanceof Array
-		expr = expr.join(' & ')
+		if expr.join(' & ').length <= align - 4
+			expr = expr.join(' & ')
+		else
+			s = ""
+			b = ""
+			for e, i in expr
+				if b.length + e.length + (if i is expr.length - 1 then 0 else 3) <= align - 4
+					b += e
+					b += " & " if i isnt expr.length - 1
+				else
+					s += b + "\n" + tab + tab
+					b = e
+					b += " & " if i isnt expr.length - 1
+			expr = s + pad(b, align - 4)
 	_c += tab + tab + "#{pad(expr, align - 4)} : #{value};\n"
 
 OutputSMV = ->
@@ -137,18 +150,16 @@ Msg = (m) -> "#{m.name}_#{m.source}_#{m.target}"
 		Init "envreq",				env.instanceNames
 
 		Next "gbuchi", ->
-			notActive = ("#{Active chart} = 0" for chart in charts)
 			isEnvObj = "(" + ("current_object = #{inst}" for inst in env.instanceNames).join(' | ') + ")"
 			Case "gbuchi = 0",														1
-			Case ["gbuchi = 1", notActive...],										2
+			Case ["gbuchi = 1", ("#{Active chart} = 0" for chart in charts)...],	2
 			Case ["gbuchi = 2", isEnvObj],											0
 			Case 1,																	"gbuchi"
 
 		Next (Msg m), (->
-			notActive = ("#{Active chart} = 0" for chart in m.charts)
 			notOthers = ("next(#{msg}) = 0" for msg in [env.messageNames..., sys.messageNames...] when msg isnt (Msg m))
 			Case "next(current_object) != #{m.source}",								0
-			Case [notOthers..., notActive...],										[0, 1]
+			Case [notOthers..., ("#{Active chart} = 0" for chart in m.charts)...],	[0, 1]
 			Case 1,																	0
 		)	for m in env.messages
 
