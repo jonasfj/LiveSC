@@ -275,5 +275,4 @@ check = =>
 		@Charts[@CurrentIndex] = @CurrentChart.toJSON()
 	smv = LSC.toSMV($.secureEvalJSON($.toJSON(@Charts)))
 	retval = LSC.Applet.checkRealizability(smv)
-	log retval
 	alert retval

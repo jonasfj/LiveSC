@@ -1,0 +1,1 @@
+{"title":"ping.lsc","charts":[{"name":"Ping/Pong","lineloc":2,"resloc":4,"locations":5,"instances":[{"name":"Client","number":0,"env":true},{"name":"Server","number":1,"env":false}],"messages":[{"name":"Ping","location":1,"source":"Client","target":"Server"},{"name":"Pong","location":3,"source":"Server","target":"Client"}]}]}

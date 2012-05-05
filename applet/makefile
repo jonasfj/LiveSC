@@ -7,11 +7,20 @@ applet.jar: jtlv.jar applet.scala
 Main.jar: jtlv.jar Main.scala
 	rm -f Main.jar
 	scalac Main.scala -d Main.jar -classpath jtlv.jar:$(LIBS)
-test: Main.jar ../examples/WTF.lsc
-	clear
+
+ifdef lsc
+test: Main.jar
+	@clear
 	@echo "-------------------------------------------------------------------------------------------------"
-	coffee makeSMV.coffee ../examples/WTF.lsc
-	java -cp Main.jar:jtlv.jar:libs/scala-library.jar:$(LIBS) Main
+	coffee makeSMV.coffee ../examples/$(lsc).lsc
+	@java -cp Main.jar:jtlv.jar:libs/scala-library.jar:$(LIBS) Main
+else
+test:
+	@echo "LSCs available for test:"
+	@ls ../examples/*.lsc | sed -e "s/\.\.\/examples\/\(.*\)\.lsc/\1/g"
+endif
+checksmv: Main.jar
+	@java -cp Main.jar:jtlv.jar:libs/scala-library.jar:$(LIBS) Main
 shrink: jtlv.jar
 	proguard @proguard.options -libraryjars $JAVA_HOME/jre/lib/rt.jar
 jtlv.jar:

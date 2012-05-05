@@ -12,7 +12,7 @@ tab = "    "
 pad = (str, len) ->
 	str = str + ""
 	str + (" " for i in [0..Math.max(0, len - 1 - str.length)]).join('')
-align = 100
+align = 100 - 5
 
 Module = (name, params) ->
 	if params.length > 0
@@ -27,7 +27,7 @@ Var = (declare) ->
 
 Declare = (name, type) ->
 	if type instanceof Array
-		type = "{#{type.join(', ')}}"
+		type = "{#{List type}}"
 	_c += tab + "#{pad(name, align)} : #{type};\n"
 
 Assign = (assign) ->
@@ -35,38 +35,83 @@ Assign = (assign) ->
 	assign()
 	_c += "\n"
 
-Init = (name, value) ->
-	if value instanceof Array
-		value = "{#{value.join(', ')}}"
-	_c += tab + "init(#{pad(name + ')', align - 5)} := #{value};\n"
+Define = (definitions) ->
+	_c += "DEFINE\n"
+	definitions()
+	_c += "\n"
 
-Next = (name, value) ->
-	unless value instanceof Function
-		val = value
-		value = -> Case "1", val
-	_c += tab + "next(#{name}) := case\n"
-	value()
-	_c += tab + "esac;\n"
+Definition = (name, expr) ->
+	if expr instanceof Function
+		expr = expr()
+	_c += tab + "#{pad(name, align)} := #{expr};\n"
 
-Case = (expr, value) ->
-	if value instanceof Array
-		value = "{#{value.join(', ')}}"
-	if expr instanceof Array
-		if expr.join(' & ').length <= align - 4
-			expr = expr.join(' & ')
+Init = (name, expr) ->
+	if expr instanceof Function
+		expr = expr()
+	_c += tab + "init(#{pad(name + ')', align - 5)} := #{expr};\n"
+
+Next = (name, expr) ->
+	if expr instanceof Function
+		if expr.is_switch is true
+			_c += tab + "next(#{name}) := "
+			expr()
+			_c += "\n"
+			return
 		else
-			s = ""
-			b = ""
-			for e, i in expr
-				if b.length + e.length + (if i is expr.length - 1 then 0 else 3) <= align - 4
-					b += e
-					b += " & " if i isnt expr.length - 1
-				else
-					s += b + "\n" + tab + tab
-					b = e
-					b += " & " if i isnt expr.length - 1
-			expr = s + pad(b, align - 4)
-	_c += tab + tab + "#{pad(expr, align - 4)} : #{value};\n"
+			expr = expr()
+	_c += tab + "next(#{pad(name + ')', align - 5)} := #{expr};\n"
+
+Quite = false
+
+Comment = (comment) ->
+	unless Quite
+		_c += tab + "-- #{comment}\n"
+
+Switch = (cases) ->
+	s = ->
+		_c += "case\n"
+		cases()
+		_c += tab + "esac;"
+	s.is_switch = true
+	return s
+
+Case = (expr1, expr2) ->
+	if expr1 instanceof Function
+		expr1 = expr1()
+	if expr2 instanceof Function
+		expr2 = expr2()
+	_c += tab + tab + "#{pad(expr1, align - 4)} : #{expr2};\n"
+
+Op = (val) -> (expr) -> if expr? then Op -> val() + " " + expr() else val()
+
+Or = (expr) -> Op ->
+	return (e() for e in expr).join(" | ")  if expr instanceof Array 
+	return "| " + expr()
+And = (expr) -> Op ->
+	return (e() for e in expr).join(" & ")  if expr instanceof Array 
+	expr = expr()
+	return "& " + expr						if expr isnt ""
+	return ""
+Eq 	= (expr) -> Op -> "= " + expr()
+In 	= (expr) -> Op -> "in " + expr()
+Neq = (expr) -> Op -> "!= " + expr()
+Geq = (expr) -> Op -> ">= " + expr()
+Leq = (expr) -> Op -> "<= " + expr()
+Ge 	= (expr) -> Op -> "> " + expr()
+Le 	= (expr) -> Op -> "< " + expr()
+
+C = (constant) -> Op -> constant
+V = (term) -> Op -> term
+N = (term) -> Op -> "next(#{term})"
+Set = (list...) -> Op ->
+	list = list[0] if list[0] instanceof Array and not list[1]?
+	"{#{List ((if expr instanceof Function then expr() else expr) for expr in list)}}"
+P = (expr) -> Op -> "(" + expr() + ")"
+True = C('1')
+False = C('0')
+
+
+List = (list) -> list.join(', ')
 
 OutputSMV = ->
 	retval = _c
@@ -84,15 +129,17 @@ Loc = (inst, chart) ->
 # Active Variable
 Active = (chart) -> "active_#{chart.number}"
 
-# Location variable value
-L = (location) -> "L#{location}"
-
 # Message variable name
 Msg = (m) -> "#{m.name}_#{m.source}_#{m.target}"
 
-@LSC.toSMV = (charts) ->
+@LSC.toSMV = (charts, quite = true) ->
+	Quite = quite
 	env = instances: [], instanceNames: [], messages: [], messageNames: []
 	sys = instances: [], instanceNames: [], messages: [], messageNames: []
+	for chart, i in charts
+		chart.lineloc += 1
+		for m in chart.messages
+			m.location += 1
 	for chart, i in charts
 		# Assign number to each chart
 		chart.number = i
@@ -106,7 +153,7 @@ Msg = (m) -> "#{m.name}_#{m.source}_#{m.target}"
 			obj.instances.push inst
 			inst.chart = chart
 			# Add list of locations in each instance to instances
-			inst.locations = [0]
+			inst.locations = [0, 1]
 			inst.locations.push m.location				for m in chart.messages when inst.name in [m.source, m.target]
 			# Compute maxPreLoc and maxLoc
 			inst.maxPreLoc = Math.max (l for l in inst.locations when l < chart.lineloc)...
@@ -119,122 +166,109 @@ Msg = (m) -> "#{m.name}_#{m.source}_#{m.target}"
 				obj.messageNames.push Msg m
 				obj.messages.push m
 			m.charts = (c for c in charts when (Msg m) in (Msg msg for msg in c.messages))
-			m.prevSourceLoc = m.prevTargetLoc = 0
+			m.prevSrcLocs = m.prevDstLocs = 0
 			for inst in chart.instances
-				m.prevSourceLoc = Math.max m.prevSourceLoc, (l for l in inst.locations when l < m.location)...			if inst.name is m.source
-				m.prevTargetLoc = Math.max m.prevTargetLoc, (l for l in inst.locations when l < m.location)...			if inst.name is m.target
+				m.prevSrcLocs = Math.max m.prevSrcLocs, (l for l in inst.locations when l < m.location)...		if inst.name is m.source
+				m.prevDstLocs = Math.max m.prevDstLocs, (l for l in inst.locations when l < m.location)...		if inst.name is m.target
+				if m.prevSrcLocs is 1
+					m.prevSrcLocs = [0, 1]
+				if m.prevDstLocs is 1
+					m.prevDstLocs = [0, 1]
+
 
 	return null if not StartSMV()
 
 	Module "main", []
 	Var ->
-		inparams = [(Loc inst, inst.chart for inst in sys.instances)..., sys.messageNames..., 'current_object']
-		Declare 'i', "input(#{('o.' + v for v in inparams).join(', ')})"
-		outparams = [(Active chart for chart in charts)..., env.messageNames..., 'gbuchi', 'envreq', (Loc inst, inst.chart for inst in env.instances)...]
-		Declare 'o', "output(#{('i.' + v for v in outparams).join(', ')})"
+		Declare 'env', "environment(#{List ('sys.' + v for v in [sys.messageNames..., 'current_object'])})"
+		Declare 'sys', "system(env.envreq)"
 
-	Module "input", [(Loc inst, inst.chart for inst in sys.instances)..., sys.messageNames..., "current_object"]
+	Module "environment", [sys.messageNames..., "current_object"]
 
 	Var ->
 		Declare msg, 				"boolean"										for msg in env.messageNames
-		Declare "gbuchi",			"0..2"
-		Declare (Active chart),		"boolean"										for chart in charts
+		Declare "gbuchi",			[0, 1, 2]
 		Declare "envreq",			env.instanceNames
-		Declare (Loc inst, chart),	(L loc for loc in inst.locations)				for inst in chart.instances when  inst.env for chart in charts
+		Declare (Loc inst, chart),	[inst.locations..., inst.maxLoc + 1]			for inst in chart.instances for chart in charts
+
+	Define ->
+		active_cond = (chart) -> (And (V(Loc inst, chart) Geq C(inst.maxPreLoc) 	for inst in chart.instances))
+		Definition (Active chart),	active_cond(chart)								for chart in charts
 
 	Assign ->
-		Init msg,					0												for msg in env.messageNames
-		Init (Loc inst, chart),		(L 0)											for inst in chart.instances when inst.env for chart in charts
-		Init "gbuchi",				0
-		Init (Active chart),		0												for chart in charts
-		Init "envreq",				env.instanceNames
+		Init msg,					False											for msg in env.messageNames
+		Init (Loc inst, chart),		C(1)											for inst in chart.instances for chart in charts
+		Init "envreq",				Set(env.instanceNames)
+		Init "gbuchi",				C(0)
 
-		Next "gbuchi", ->
-			isEnvObj = "(" + ("current_object = #{inst}" for inst in env.instanceNames).join(' | ') + ")"
-			Case "gbuchi = 0",														1
-			Case ["gbuchi = 1", ("#{Active chart} = 0" for chart in charts)...],	2
-			Case ["gbuchi = 2", isEnvObj],											0
-			Case 1,																	"gbuchi"
+		Comment "Object that environment requests as current_object"
+		Next "envreq",				Set(env.instanceNames)
+		
+		Comment "Winning condition, encoded as generalized buchi automata"
+		Next "gbuchi", Switch ->
+			Case (V('gbuchi') Eq C(0)),																		C(1)
+			Case (V('gbuchi') Eq C(1) And (And (V(Active chart) Eq False for chart in charts))), 			C(2)
+			Case (V('gbuchi') Eq C(2) And V('current_object') In Set(env.instanceNames)),					C(0)
+			Case True,																						V('gbuchi')
 
-		Next (Msg m), (->
-			notOthers = ("next(#{msg}) = 0" for msg in [env.messageNames..., sys.messageNames...] when msg isnt (Msg m))
-			Case "next(current_object) != #{m.source}",								0
-			Case [notOthers..., ("#{Active chart} = 0" for chart in m.charts)...],	[0, 1]
-			Case 1,																	0
+		Comment "Message can fire if source is current_object, and other messages doesn't fire"
+		not_other_msg = (msg1) -> And (N(msg2) Eq False for msg2 in env.messageNames when msg1 isnt msg2)
+		Next (Msg m), (Switch ->
+			Case (V('current_object') Eq V(m.source) And not_other_msg(Msg m)),								Set(False, True)
+			Case True,																						False
 		)	for m in env.messages
 
-		Next (Active chart), (->
-			maxPreLoc = ("next(#{Loc inst, chart}) = #{L inst.maxPreLoc}" for inst in chart.instances)
-			maxLoc = ("next(#{Loc inst, chart}) = #{L inst.maxLoc}" for inst in chart.instances)
-			Case ["#{Active chart} = 0", maxPreLoc...],								1
-			Case ["#{Active chart} = 1", maxLoc...],								0
-			Case 1,																	Active chart
-		)	for chart in charts
+		Next (Loc inst, chart), (Switch ->
+			Comment "Reset if any other locations in this chart decides to reset"
+			does_reset = (i)-> V(Loc i, chart) Neq C(0) And N(Loc i, chart) Eq C(0)
+			Case (Or (does_reset(i) for i in chart.instances when i isnt inst)),			C(1)
 
-		Next (Loc inst, chart), (->
-			Case ["#{Active chart} = 1", "next(#{Active chart}) = 0"],				(L 0)
-			Case ["#{Loc inst, chart} = #{L m.prevSourceLoc}",
-				  "#{Loc m.target, chart} = #{L m.prevTargetLoc}",
-				  "next(#{Loc m.target, chart}) = #{L m.location}",
-				  "next(#{Msg m}) = 1"],											(L m.location)		for m in chart.messages when m.source is inst.name
-			Case ["#{Loc inst, chart} = #{L m.prevTargetLoc}",
-				  "#{Loc m.source, chart} = #{L m.prevSourceLoc}",
-				  "next(#{Loc m.source, chart}) = #{L m.location}",
-				  "next(#{Msg m}) = 1"],											(L m.location)		for m in chart.messages when m.target is inst.name
-			cantFireM = (m) -> "(#{Loc m.source, chart} != #{L m.prevSourceLoc} | #{Loc m.target, chart} != #{L m.prevTargetLoc})"
-			cantFire = (m1) -> (cantFireM(m2) for m2 in chart.messages when (Msg m2) is (Msg m1)).join(' & ')
-			reset = "(" + ("(#{cantFire(m)} & next(#{Msg m}) = 1)" for m in [sys.messages..., env.messages...]).join(' | ') + ")"
-			Case ["#{Active chart} = 0", reset],									(L 0)
-			Case 1,																	(Loc inst, chart)
-		)	for inst in chart.instances when inst.env for chart in charts
+			# Messages relevant to this instance line
+			relevant_msgs = (m for m in chart.messages when inst.name in [m.source, m.target])
+			last_msg = (m for m in relevant_msgs when m.location is inst.maxLoc)[0]
+
+			# Helper conditions
+			in_mainchart = (m) -> if m.location > chart.lineloc then True else False
+			move_msg = (m) -> V(Loc m.source, chart) In Set(m.prevSrcLocs) And V(Loc m.target, chart) In Set(m.prevDstLocs) And V(Msg m) Eq True
+
+			Comment "Reset on last message if others are at end or resetting too"
+			at_end = (And (V(Loc i, chart) Eq C(i.maxLoc) for i in chart.instances when i.name not in [last_msg.source, last_msg.target]))
+			Case (move_msg(last_msg) And at_end),										C(0)
+
+			Comment "Move forward on each relevant message"
+			Case (move_msg(m) And V(Active chart) Eq in_mainchart(m)),					C(m.location)			for m in relevant_msgs
+
+			Comment "If message is relevant and chart inactive reset pre-chart"
+			Case (V(Active chart) Eq False And V(Msg m) Eq True), 						C(0) 					for m in relevant_msgs
+
+			Comment "If message is relevant and chart active go to dead location"
+			Case (V(Active chart) Eq True And V(Msg m) Eq True), 						C(inst.maxLoc + 1) 		for m in relevant_msgs
+
+			Comment "Clean-up the reset operation, not strictly necessary but nice"
+			Case (V(Loc inst, chart) Eq C(0)),											C(1)
+
+			Case True,																	V(Loc inst, chart)
+		)	for inst in chart.instances for chart in charts
 
 
-	Module "output", [(Active chart for chart in charts)..., env.messageNames..., "gbuchi", "envreq", (Loc inst, inst.chart for inst in env.instances)...]
+	Module "system", ["envreq"]
 	
 	Var ->
 		Declare msg, 						"boolean"										for msg in sys.messageNames
-		Declare (Loc inst, chart),			(L l for l in inst.locations)					for inst in chart.instances when not inst.env for chart in charts
 		Declare "current_object",			[sys.instanceNames..., env.instanceNames...]
 	
 	Assign ->
-		Init msg,							0												for msg in sys.messageNames
-		Init "current_object",				["envreq", sys.instanceNames...]
-		Init (Loc inst, chart),				(L 0)											for inst in chart.instances when not inst.env for chart in charts
-		
-		Next "current_object",				["envreq", sys.instanceNames...]
+		Init msg,							False											for msg in sys.messageNames
+		Init "current_object",				Set("envreq", sys.instanceNames...)
 
-		Next (Msg m), (->
-			Case "next(current_object) != #{m.source}",								0
-			notOthers = ("next(#{msg}) = 0" for msg in [env.messageNames..., sys.messageNames...] when msg isnt (Msg m))
-			canFireM = (chart, m2) ->  ["#{Loc m2.source, chart} = #{L m2.prevSourceLoc}",
-										"#{Loc m2.target, chart} = #{L m2.prevTargetLoc}",
-										"next(#{Loc m2.source, chart}) = #{L m2.location}",
-										"next(#{Loc m2.target, chart}) = #{L m2.location}"].join(" & ")
-			canFire = (chart) -> (canFireM(chart, m2) for m2 in chart.messages when (Msg m) is (Msg m2)).join(' | ')
-			oneActive = "(" + ("#{Active chart} = 1" for chart in m.charts).join(' | ') + ")"
-			inactiveOrFire = ("(#{Active chart} = 0 | (#{canFire(chart)}))" for chart in m.charts)
-			Case [oneActive, inactiveOrFire..., notOthers...],							1
-			Case 1,																	0
+		Next "current_object",				Set("envreq", sys.instanceNames...)
+
+		Comment "Message can fire if source is current_object, and other messages doesn't fire"
+		not_other_msg = (msg1) -> And (N(msg2) Eq False for msg2 in sys.messageNames when msg1 isnt msg2)
+		Next (Msg m), (Switch ->
+			Case (V('current_object') Eq V(m.source) And not_other_msg(Msg m)),								Set(False, True)
+			Case True,																						False
 		)	for m in sys.messages
-	
-		Next (Loc inst, chart), (->
-			Case ["#{Active chart} = 1", "next(#{Active chart}) = 0"],				(L 0)
-			Case ["#{Loc inst, chart} = #{L m.prevSourceLoc}",
-				  "#{Loc m.target, chart} = #{L m.prevTargetLoc}",
-				  "next(#{Loc m.target, chart}) = #{L m.location}",
-				  "next(#{Msg m}) = 1"],											(L m.location)		for m in chart.messages when m.source is inst.name
-			Case ["#{Loc inst, chart} = #{L m.prevTargetLoc}",
-				  "#{Loc m.source, chart} = #{L m.prevSourceLoc}",
-				  "next(#{Loc m.source, chart}) = #{L m.location}",
-				  "next(#{Msg m}) = 1"],											(L m.location)		for m in chart.messages when m.target is inst.name
-			cantFireM = (m) -> "(#{Loc m.source, chart} != #{L m.prevSourceLoc} | #{Loc m.target, chart} != #{L m.prevTargetLoc})"
-			cantFire = (m1) -> (cantFireM(m2) for m2 in chart.messages when (Msg m2) is (Msg m1)).join(' & ')
-			reset = "(" + ("(#{cantFire(m)} & next(#{Msg m}) = 1)" for m in [sys.messages..., env.messages...]).join(' | ') + ")"
-			Case ["#{Active chart} = 0", reset],									(L 0)
-			Case 1,																	(Loc inst, chart)
-		)	for inst in chart.instances when not inst.env for chart in charts
-	
+
 	return OutputSMV()
-
-
 

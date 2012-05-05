@@ -7,39 +7,33 @@ import edu.wis.jtlv.env.spec._
 import net.sf.javabdd._
 
 class Applet extends JApplet{
-	override def init() {
-	}
-	def greet(name : String) : String = {
-		return "Hello " + name + " now check if I work!"
-	}
+	override def init() {}
 	def checkRealizability(model : String) : String = {
 		// Load Transition systems
 		Env.loadSMVModuleFromString(model)
 
 		// Load Modules
-		var input = Env.getModule("main.i")
-		var output = Env.getModule("main.o")
+		var env = Env.getModule("main.env")
+		var sys = Env.getModule("main.sys")
 
 		// Load transition systems
-		var env_trans = input.trans()
-		var sys_trans = output.trans()
+		var env_trans = env.trans()
+		var sys_trans = sys.trans()
 
 		// Variables
-		var env_vars = input.moduleVars()
-		var sys_vars = output.moduleVars()
+		var env_vars = env.moduleVars()
+		var sys_vars = sys.moduleVars()
 
-		var env_pvars = input.modulePrimeVars()
-		var sys_pvars = output.modulePrimeVars()
+		var env_pvars = env.modulePrimeVars()
+		var sys_pvars = sys.modulePrimeVars()
 
 		// Find initial conditions
-		var env_init = input.initial()
-		var sys_init = output.initial()
+		var env_init = env.initial()
+		var sys_init = sys.initial()
 
 		// Controllable Predecessors
 		def cpred(q : BDD) : BDD = {
-			var as1 = env_trans.imp(sys_trans.and(Env.prime(q))).exist(sys_pvars).forAll(env_pvars)
-			var as2 = sys_trans.and(env_trans).and(Env.prime(q)).exist(env_pvars).exist(sys_pvars)
-			return as1.and(as2)
+			return env_trans.imp(Env.prime(q).and(sys_trans).exist(sys_pvars)).forAll(env_pvars);
 		}
 
 		// Find Winning States
@@ -63,7 +57,7 @@ class Applet extends JApplet{
 			return counter.isZero()
 		}
 
-		var spec = Env.loadSpecString("SPEC i.gbuchi = 0")(0)
+		var spec = Env.loadSpecString("SPEC env.gbuchi = 0")(0)
 
 		var result = checkRealizabtility(spec.toBDD())
 
