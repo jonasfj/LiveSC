@@ -21,8 +21,9 @@ test:
 endif
 checksmv: Main.jar
 	@java -cp Main.jar:jtlv.jar:libs/scala-library.jar:$(LIBS) Main
-shrink: jtlv.jar
-	proguard @proguard.options -libraryjars $JAVA_HOME/jre/lib/rt.jar
+shrink: jtlv.jar applet.jar
+	proguard @proguard.options -libraryjars $(JAVA_HOME)/jre/lib/rt.jar
+	rm bin/applet.min.jar
 jtlv.jar:
 	mkdir -p bin/jtlv/
 	javac -classpath $(LIBS) -d bin/jtlv/ $(SOURCES)
@@ -32,3 +33,4 @@ clean:
 	rm -rf bin/
 	rm -f jtlv.jar
 	rm -f Main.jar
+	rm -f scala-min.jar

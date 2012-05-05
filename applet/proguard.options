@@ -1,7 +1,12 @@
--injars bin/applet.jar
+-injars applet.jar
 -outjars bin/applet.min.jar
--injars lib/scala-library.jar
--outjars bin/scala-min.jar
+-injars libs/scala-library.jar
+-outjars scala-min.jar
+-libraryjars libs/antlr-runtime-3.0.1.jar
+-libraryjars libs/javabdd-2.0.jar
+-libraryjars libs/jdd.jar
+-libraryjars jtlv.jar
+
 -keep public class Applet
 
 -keep public class java.**
