@@ -138,6 +138,7 @@ Msg = (m) -> "#{m.name}_#{m.source}_#{m.target}"
 	sys = instances: [], instanceNames: [], messages: [], messageNames: []
 	for chart, i in charts
 		chart.lineloc += 1
+		chart.resloc += 1
 		for m in chart.messages
 			m.location += 1
 	for chart, i in charts
@@ -157,7 +158,8 @@ Msg = (m) -> "#{m.name}_#{m.source}_#{m.target}"
 			inst.locations.push m.location				for m in chart.messages when inst.name in [m.source, m.target]
 			# Compute maxPreLoc and maxLoc
 			inst.maxPreLoc = Math.max (l for l in inst.locations when l < chart.lineloc)...
-			inst.maxLoc = Math.max inst.locations...
+			inst.maxLoc = Math.max (l for l in inst.locations when l < chart.resloc)...
+			inst.locations = (l for l in inst.locations when l < chart.resloc)
 		chart.messageNames = []
 		for m in chart.messages
 			chart.messageNames.push Msg m				if Msg m not in chart.messageNames
@@ -165,30 +167,36 @@ Msg = (m) -> "#{m.name}_#{m.source}_#{m.target}"
 			if (Msg m) not in obj.messageNames
 				obj.messageNames.push Msg m
 				obj.messages.push m
+			m.index = obj.messageNames.indexOf(Msg m) + 1
+			if obj is env
+				m.fires = V('env_msg') Eq C(m.index)
+			else
+				m.fires = V('sys_msg') Eq C(m.index)
 			m.charts = (c for c in charts when (Msg m) in (Msg msg for msg in c.messages))
 			m.prevSrcLocs = m.prevDstLocs = 0
 			for inst in chart.instances
 				m.prevSrcLocs = Math.max m.prevSrcLocs, (l for l in inst.locations when l < m.location)...		if inst.name is m.source
 				m.prevDstLocs = Math.max m.prevDstLocs, (l for l in inst.locations when l < m.location)...		if inst.name is m.target
-				if m.prevSrcLocs is 1
-					m.prevSrcLocs = [0, 1]
-				if m.prevDstLocs is 1
-					m.prevDstLocs = [0, 1]
+			if m.prevSrcLocs is 1
+				m.prevSrcLocs = [0, 1]
+			if m.prevDstLocs is 1
+				m.prevDstLocs = [0, 1]
+			if m.location > chart.resloc
+				m.prevSrcLocs = m.prevDstLocs = []
 
 
 	return null if not StartSMV()
 
 	Module "main", []
 	Var ->
-		Declare 'env', "environment(#{List ('sys.' + v for v in [sys.messageNames..., 'current_object'])})"
-		Declare 'sys', "system(env.envreq)"
+		Declare 'env', "environment(sys.sys_msg, sys.current_player)"
+		Declare 'sys', "system()"
 
-	Module "environment", [sys.messageNames..., "current_object"]
+	Module "environment", ["sys_msg", "current_player"]
 
 	Var ->
-		Declare msg, 				"boolean"										for msg in env.messageNames
+		Declare "env_msg", 			"0..#{env.messageNames.length}"
 		Declare "gbuchi",			[0, 1, 2]
-		Declare "envreq",			env.instanceNames
 		Declare (Loc inst, chart),	[inst.locations..., inst.maxLoc + 1]			for inst in chart.instances for chart in charts
 
 	Define ->
@@ -196,53 +204,50 @@ Msg = (m) -> "#{m.name}_#{m.source}_#{m.target}"
 		Definition (Active chart),	active_cond(chart)								for chart in charts
 
 	Assign ->
-		Init msg,					False											for msg in env.messageNames
+		Init "env_msg",				C(0)
 		Init (Loc inst, chart),		C(1)											for inst in chart.instances for chart in charts
-		Init "envreq",				Set(env.instanceNames)
 		Init "gbuchi",				C(0)
-
-		Comment "Object that environment requests as current_object"
-		Next "envreq",				Set(env.instanceNames)
 		
 		Comment "Winning condition, encoded as generalized buchi automata"
 		Next "gbuchi", Switch ->
 			Case (V('gbuchi') Eq C(0)),																		C(1)
 			Case (V('gbuchi') Eq C(1) And (And (V(Active chart) Eq False for chart in charts))), 			C(2)
-			Case (V('gbuchi') Eq C(2) And V('current_object') In Set(env.instanceNames)),					C(0)
+			Case (V('gbuchi') Eq C(2) And V('current_player') Eq C("ENV")),									C(0)
 			Case True,																						V('gbuchi')
 
-		Comment "Message can fire if source is current_object, and other messages doesn't fire"
-		not_other_msg = (msg1) -> And (N(msg2) Eq False for msg2 in env.messageNames when msg1 isnt msg2)
-		Next (Msg m), (Switch ->
-			Case (V('current_object') Eq V(m.source) And not_other_msg(Msg m)),								Set(False, True)
-			Case True,																						False
-		)	for m in env.messages
+		Comment "A Message can be fired if current_player is ENV"
+		Next "env_msg", Switch ->
+			Case (V('current_player') Eq C('ENV')),															C("0..#{env.messageNames.length}")
+			Case True,																						C(0)
 
 		Next (Loc inst, chart), (Switch ->
 			Comment "Reset if any other locations in this chart decides to reset"
 			does_reset = (i)-> V(Loc i, chart) Neq C(0) And N(Loc i, chart) Eq C(0)
-			Case (Or (does_reset(i) for i in chart.instances when i isnt inst)),			C(1)
+			Case (Or (does_reset(i) for i in chart.instances when i isnt inst)),		C(1)
 
 			# Messages relevant to this instance line
 			relevant_msgs = (m for m in chart.messages when inst.name in [m.source, m.target])
-			last_msg = (m for m in relevant_msgs when m.location is inst.maxLoc)[0]
+			msgs = (m for m in relevant_msgs when m.location < chart.resloc)
+			last_msg = null
+			for m in msgs when last_msg is null or last_msg.location < m.location
+				last_msg = m
 
 			# Helper conditions
 			in_mainchart = (m) -> if m.location > chart.lineloc then True else False
-			move_msg = (m) -> V(Loc m.source, chart) In Set(m.prevSrcLocs) And V(Loc m.target, chart) In Set(m.prevDstLocs) And V(Msg m) Eq True
+			move_msg = (m) -> V(Loc m.source, chart) In Set(m.prevSrcLocs) And V(Loc m.target, chart) In Set(m.prevDstLocs) And m.fires
 
 			Comment "Reset on last message if others are at end or resetting too"
 			at_end = (And (V(Loc i, chart) Eq C(i.maxLoc) for i in chart.instances when i.name not in [last_msg.source, last_msg.target]))
-			Case (move_msg(last_msg) And at_end),										C(0)
+			Case (move_msg(last_msg) And at_end),										C(0)					if last_msg isnt null
 
-			Comment "Move forward on each relevant message"
-			Case (move_msg(m) And V(Active chart) Eq in_mainchart(m)),					C(m.location)			for m in relevant_msgs
+			Comment "Move forward on each message on this instance line"
+			Case (move_msg(m) And V(Active chart) Eq in_mainchart(m)),					C(m.location)			for m in msgs
 
 			Comment "If message is relevant and chart inactive reset pre-chart"
-			Case (V(Active chart) Eq False And V(Msg m) Eq True), 						C(0) 					for m in relevant_msgs
+			Case (V(Active chart) Eq False And m.fires), 								C(0) 					for m in relevant_msgs
 
 			Comment "If message is relevant and chart active go to dead location"
-			Case (V(Active chart) Eq True And V(Msg m) Eq True), 						C(inst.maxLoc + 1) 		for m in relevant_msgs
+			Case (V(Active chart) Eq True And m.fires),									C(inst.maxLoc + 1) 		for m in relevant_msgs
 
 			Comment "Clean-up the reset operation, not strictly necessary but nice"
 			Case (V(Loc inst, chart) Eq C(0)),											C(1)
@@ -251,24 +256,22 @@ Msg = (m) -> "#{m.name}_#{m.source}_#{m.target}"
 		)	for inst in chart.instances for chart in charts
 
 
-	Module "system", ["envreq"]
+	Module "system", []
 	
 	Var ->
-		Declare msg, 						"boolean"										for msg in sys.messageNames
-		Declare "current_object",			[sys.instanceNames..., env.instanceNames...]
+		Declare "sys_msg", 					"0..#{sys.messageNames.length}"
+		Declare "current_player",			["ENV", "SYS"]
 	
 	Assign ->
-		Init msg,							False											for msg in sys.messageNames
-		Init "current_object",				Set("envreq", sys.instanceNames...)
+		Init "sys_msg",						C(0)
+		Init "current_player",				Set("ENV", "SYS")
 
-		Next "current_object",				Set("envreq", sys.instanceNames...)
+		Next "current_player",				Set("ENV", "SYS")
 
-		Comment "Message can fire if source is current_object, and other messages doesn't fire"
-		not_other_msg = (msg1) -> And (N(msg2) Eq False for msg2 in sys.messageNames when msg1 isnt msg2)
-		Next (Msg m), (Switch ->
-			Case (V('current_object') Eq V(m.source) And not_other_msg(Msg m)),								Set(False, True)
-			Case True,																						False
-		)	for m in sys.messages
+		Comment "A Message can be fired if current_player is SYS"
+		Next "sys_msg", Switch ->
+			Case (V('current_player') Eq C('SYS')),															C("0..#{sys.messageNames.length}")
+			Case True,																						C(0)
 
 	return OutputSMV()
 
