@@ -1,0 +1,27 @@
+LiveSC: A Live Sequence Chart Editor
+====================================
+LiveSC is web-based live sequence chart editor that can check for realizability, given a set of charts with environment and system instance lines.
+
+Realizability is checking using symbolic model checking with JTLV running as a Java applet. This currently causes LiveSC to be fairly slow, and due to the poor integration of Java in modern browsers occationally requires the user to kill a few process.
+
+In its current state the code is still fairly unpolished, and this merly serves as a proof of concept. An online test version of LiveSC can be found [here](http://jopsen.github.com/LiveSC/).
+
+
+Building LiveSC
+---------------
+LiveSC is written in coffeescript, and a `Cakefile` for building can be located in the repository root.
+
+To build the applet you'll need a Scala compiler, Java compiler and GNU Make.
+The relevant `makefile` can be located in the `applet/` folder of the repository.
+
+License
+-------
+LiveSC is licensed under GNU GPL.
+
+Authors
+-------
+  * Jonas Finnemann Jensen,
+  * Lars Kærlund Østergaard,
+  * Lisa Fontani, and
+  * Daniel Ejsing-Duun.
+
