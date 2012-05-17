@@ -1,0 +1,101 @@
+html{
+	height: 		100%;
+}
+
+body{
+	height: 		100%;
+	margin:			0px;
+	padding:		0px;
+	font-size:		75%;
+	font-family:	"Trebuchet MS", "Helvetica", "Arial",  "Verdana", sans-serif;
+	overflow:		hidden;
+}
+
+input.centered {
+	text-align:		center;
+}
+
+input.editor {
+	position:		absolute;
+	font-family:	arial;
+	font-size:		10px;
+	border:			none;
+	z-index:		1000;
+	outline: 		none;
+	background:		transparent;
+}
+
+.instancerow{
+	padding-left:	20px;
+}
+
+svg{
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-o-user-select: none;
+	-ie-user-select:none;
+	user-select: none;
+}
+
+#toolbar{
+	height:			40px;
+}
+
+#wrapper{
+	width:			100%;
+	height: 		100%;
+	margin:			0;
+}
+
+#workspace{
+	position:			relative;
+	margin-left:		250px;
+	overflow:			auto;
+	border-left:		1px solid #000;
+	background-color:	#ffffff;
+	z-index:			1;
+}
+
+div.wrapright{
+	float:			left;
+	width:			100%;
+}
+
+#chartlist{
+	float:			left;
+	width:			250px;
+	min-height:		100px;
+	margin-left:	-100%;
+	overflow:		auto;
+}
+
+#chartlist .item{
+	padding:		5px;
+	cursor:			pointer;
+}
+
+#chartlist .item:nth-child(odd){
+	background:		#fff;
+}
+#chartlist .item:nth-child(even){
+	background:		#f6f6f6;
+}
+
+
+#chartlist .item:hover{
+	background:		#e6e6e6;
+	-moz-box-shadow: 0 0 3px rgba(0,0,0,0.5);
+	-webkit-box-shadow: 0 0 3px rgba(0,0,0,0.5);
+	box-shadow: 0 0 3px rgba(0,0,0,0.5);
+}
+
+#effectarea{
+	position: 		absolute;
+	z-index: 		99999999;
+	width: 			100%;
+	height: 		100%;
+	top: 			0px;
+	left: 			0px;
+	display:		none;
+}
