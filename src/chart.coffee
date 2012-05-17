@@ -240,7 +240,6 @@ class @LSC.Chart
 		@lineloc -= 1 if m.location < @lineloc
 		@resloc -= 1 #TODO: check if this works
 		@locations -= 1
-		delete m
 	deleteInstance: (i) =>
 		for inst in @instances when inst.number > i.number
 			inst.number -= 1
@@ -248,7 +247,6 @@ class @LSC.Chart
 		i.remove()
 		for m in @messages when m.source == i or m.target == i
 			@deleteMessage(m)
-		delete i
 	deleteSelection: =>
 		@deleteMessage(m) for m in @messages when m.selected
 		@deleteInstance(i) for i in @instances when i.selected

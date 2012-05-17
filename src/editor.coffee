@@ -129,6 +129,7 @@ instant = false
 	new @LSC.Button("exchange", "Add message", toolbar).click 			-> CurrentChart?.addMessage()
 	new @LSC.Button("trash", "Delete selection", toolbar).click 		-> CurrentChart?.deleteSelection()
 	new @LSC.Button("cloudDown", "Download project", toolbar).click		download
+	new @LSC.Button("picture", "Export Chart as SVG", toolbar).click	exportSVG
 	new @LSC.Button("download", "Export SMV code", toolbar).click		getSMV
 	new @LSC.Button("arrowright", "Check realizability", toolbar).click	check
 
@@ -276,3 +277,10 @@ check = =>
 	smv = LSC.toSMV($.secureEvalJSON($.toJSON(@Charts)))
 	retval = LSC.Applet.checkRealizability(smv)
 	alert retval
+
+exportSVG = =>
+	if @CurrentChart?
+		@CurrentChart.clearSelection()
+		data = @CurrentChart.paper.toSVG();
+		dataurl = "data:application/lsc+json;base64,#{$.base64Encode(data)}"
+		window.open(dataurl, "_blank")
