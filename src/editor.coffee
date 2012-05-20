@@ -136,9 +136,6 @@ instant = false
 	# Add new empty chart
 	addChart()
 
-	# Initialize applet
-	@LSC.Applet.initialize()
-
 # Initialize editor
 $ LSC.initialize
 
@@ -275,8 +272,7 @@ check = =>
 	if @CurrentChart?
 		@Charts[@CurrentIndex] = @CurrentChart.toJSON()
 	smv = LSC.toSMV($.secureEvalJSON($.toJSON(@Charts)))
-	retval = LSC.Applet.checkRealizability(smv)
-	alert retval
+	LSC.Applet.checkRealizability(smv)
 
 exportSVG = =>
 	if @CurrentChart?
