@@ -131,7 +131,7 @@ class @LSC.Chart
 				t_num = s_num + 1
 				t_num = s_num - 1 if t_num >= @instances.length
 			loc = @GetLocation(LSC.pageY2RaphaelY(event.pageY))
-			@addingM = @createMessage(s_num, t_num, loc, "msg()", false)
+			@addingM = @createMessage(s_num, t_num, loc, "msg", false)
 	mouseMove: (event) =>
 		if isNaN event.pageY
 			log "pis"
@@ -179,7 +179,7 @@ class @LSC.Chart
 		m.edit()		if edit
 		return m
 	createInstance: (env) =>
-		i = new LSC.Instance("New instance", @instances.length, env, @paper, @)
+		i = new LSC.Instance("untitled", @instances.length, env, @paper, @)
 		@instances.push(i)
 		@update()
 		i.edit()
