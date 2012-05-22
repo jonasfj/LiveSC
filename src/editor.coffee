@@ -127,7 +127,7 @@ instant = false
 	@toolbar = new @LSC.Toolbar(@Raphael("toolbar", "100%", cfg.toolbar.height))
 	new @LSC.Button("AddChart", "Add chart", toolbar).click 			-> addChart()
 	new @LSC.Button("plus", "Add controller instance", toolbar).click 	-> CurrentChart?.createInstance(false)
-	new @LSC.Button("SwitchType", "Switch instance type (env/sys)", toolbar).click -> CurrentChart?.createInstance(true)
+	new @LSC.Button("SwitchType", "Switch instance type (env/sys)", toolbar).click -> CurrentChart?.changeInstanceType()
 	new @LSC.Button("exchange", "Add message", toolbar).click 			-> CurrentChart?.addMessage()
 	new @LSC.Button("trash", "Delete selection", toolbar).click 		-> CurrentChart?.deleteSelection()
 	new @LSC.Button("cloudDown", "Download project", toolbar).click		download
@@ -259,15 +259,23 @@ dropFile = (event) =>
 getSMV = =>
 	if @CurrentChart?
 		@Charts[@CurrentIndex] = @CurrentChart.toJSON()
-	data = @LSC.toSMV($.secureEvalJSON($.toJSON(@Charts)))
-	dataurl = "data:text/plain;base64,#{$.base64Encode(data)}"
+	try
+		data = @LSC.toSMV($.secureEvalJSON($.toJSON(@Charts)))
+	catch error
+		alert "An error occurred during translation.\nPlease provide at least one message."
+		return
+	dataurl = "data:application/lsc+json;base64,#{$.base64Encode(data)}"
 	informDownload()
-	window.open(dataurl)
+	window.open(dataurl, "_blank")
 
 check = =>
 	if @CurrentChart?
 		@Charts[@CurrentIndex] = @CurrentChart.toJSON()
-	smv = LSC.toSMV($.secureEvalJSON($.toJSON(@Charts)))
+	try
+		smv = LSC.toSMV($.secureEvalJSON($.toJSON(@Charts)))
+	catch error
+		alert "An error occurred during translation.\nPlease provide at least one message."
+		return
 	LSC.Applet.checkRealizability(smv)
 
 exportSVG = =>

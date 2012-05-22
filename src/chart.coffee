@@ -94,7 +94,7 @@ class @LSC.Chart
 			text: @name
 		@updateSize(@x + 2 * (cfg.margin + cfg.prechart.padding) + width, height)
 		LSC.animate() if instant
-	#Update paper size for this chart
+	# Update paper size for this chart
 	updateSize: (width, height) =>
 		# Only update width and height if necessary
 		width = Math.max($(window).width() - cfg.sidebar.width - cfg.margin, width)
@@ -102,7 +102,7 @@ class @LSC.Chart
 			@width = width
 			@height = height
 			@paper.setSize(width, height)
-	#moves an instance line
+	# moves an instance line
 	moveInstance: (instance, number) =>
 		prev = instance.number
 		if prev < number
@@ -256,6 +256,11 @@ class @LSC.Chart
 		for i in @instances when i.name == instanceName
 			return i
 		return null
+	# changes the type of selected instance
+	changeInstanceType: =>
+		for i in @instances when i.selected
+			i.env = !i.env
+		@update()
 	toJSON: =>
 			name:			@name
 			lineloc:		@lineloc
