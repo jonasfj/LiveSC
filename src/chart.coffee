@@ -279,13 +279,15 @@ class @LSC.Chart
 		@update()
 	toJSON: =>
 			name:			@name
+			disabled:		@disabled
 			lineloc:		@lineloc
 			resloc:			@resloc
 			locations:		@locations
 			instances:		(i.toJSON() for i in @instances)
 			messages:		(m.toJSON() for m in @messages)
 	@emptyJSON:
-		name: "Untitled"
+		name: 				"Untitled"
+		disabled:			false
 		lineloc:			1
 		resloc:				2
 		locations:			3
@@ -293,6 +295,7 @@ class @LSC.Chart
 		messages:			[]
 	fromJSON: (json) =>
 		@name = json.name
+		@disabled = json.disabled
 		@lineloc = json.lineloc
 		@resloc = json.resloc
 		@locations = json.locations

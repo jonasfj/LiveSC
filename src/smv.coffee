@@ -221,6 +221,12 @@ Msg = (m) -> "#{m.name}_#{m.source}_#{m.target}"
 			Case True,																						C(0)
 
 		Next (Loc inst, chart), (Switch ->
+			
+			# FALSE chart
+			if chart.disabled
+				Comment "Go to dead state, since mainchart is false"
+				Case (V(Active chart) Eq True),											C(inst.maxLoc + 1)
+				
 			Comment "Reset if any other locations in this chart decides to reset"
 			does_reset = (i)-> V(Loc i, chart) Neq C(0) And N(Loc i, chart) Eq C(0)
 			Case (Or (does_reset(i) for i in chart.instances when i isnt inst)),		C(1)
@@ -235,7 +241,7 @@ Msg = (m) -> "#{m.name}_#{m.source}_#{m.target}"
 			# Helper conditions
 			in_mainchart = (m) -> if m.location > chart.lineloc then True else False
 			move_msg = (m) -> V(Loc m.source, chart) In Set(m.prevSrcLocs) And V(Loc m.target, chart) In Set(m.prevDstLocs) And m.fires
-
+			
 			Comment "Reset on last message if others are at end or resetting too"
 			at_end = (And (V(Loc i, chart) Eq C(i.maxLoc) for i in chart.instances when i.name not in [last_msg.source, last_msg.target]))
 			Case (move_msg(last_msg) And at_end),										C(0)					if last_msg isnt null
@@ -245,7 +251,7 @@ Msg = (m) -> "#{m.name}_#{m.source}_#{m.target}"
 
 			Comment "If message is relevant and chart inactive reset pre-chart"
 			Case (V(Active chart) Eq False And m.fires), 								C(0) 					for m in relevant_msgs
-
+			
 			Comment "If message is relevant and chart active go to dead location"
 			Case (V(Active chart) Eq True And m.fires),									C(inst.maxLoc + 1) 		for m in relevant_msgs
 
