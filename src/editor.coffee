@@ -258,14 +258,22 @@ dropFile = (event) =>
 getSMV = =>
 	if @CurrentChart?
 		@Charts[@CurrentIndex] = @CurrentChart.toJSON()
-	data = @LSC.toSMV($.secureEvalJSON($.toJSON(@Charts)))
+	try
+		data = @LSC.toSMV($.secureEvalJSON($.toJSON(@Charts)))
+	catch error
+		alert "An error occurred during translation.\nPlease provide at least one message."
+		return
 	dataurl = "data:application/lsc+json;base64,#{$.base64Encode(data)}"
 	window.open(dataurl, "_blank")
 
 check = =>
 	if @CurrentChart?
 		@Charts[@CurrentIndex] = @CurrentChart.toJSON()
-	smv = LSC.toSMV($.secureEvalJSON($.toJSON(@Charts)))
+	try
+		smv = LSC.toSMV($.secureEvalJSON($.toJSON(@Charts)))
+	catch error
+		alert "An error occurred during translation.\nPlease provide at least one message."
+		return
 	LSC.Applet.checkRealizability(smv)
 
 exportSVG = =>
