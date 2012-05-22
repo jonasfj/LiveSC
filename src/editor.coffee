@@ -134,6 +134,7 @@ instant = false
 	new @LSC.Button("picture", "Export Chart as SVG", toolbar).click	exportSVG
 	new @LSC.Button("download", "Export SMV code", toolbar).click		getSMV
 	new @LSC.Button("arrowright", "Check realizability", toolbar).click	check
+	new @LSC.Button("star3off", "Load example", toolbar).click			examples
 
 	# Add new empty chart
 	addChart()
@@ -172,10 +173,10 @@ download = =>
 		@Charts[@CurrentIndex] = @CurrentChart.toJSON()
 	# Put everything into JSON
 	data = $.toJSON
-		title:			LSC.escapeName(@toolbar.getTitle())
+		title:			@toolbar.getTitle()
 		charts:			@Charts
 	# Open data URL
-	dataurl = "data:text/plain;base64,#{$.base64Encode(data)}"
+	dataurl = "data:application/octet-stream;base64,#{$.base64Encode(data)}"
 	informDownload()
 	window.open(dataurl, "_blank")
 
@@ -249,7 +250,7 @@ dropFile = (event) =>
 		data = $.secureEvalJSON(reader.result)
 		for item in data.charts
 			addChart(item, false)
-		@toolbar.setTitle(LSC.unescapeName(data.title))
+		@toolbar.setTitle(data.title)
 		if @Charts.length == 0
 			addChart()
 		else
@@ -264,7 +265,7 @@ getSMV = =>
 	catch error
 		alert "An error occurred during translation.\nPlease provide at least one message."
 		return
-	dataurl = "data:application/lsc+json;base64,#{$.base64Encode(data)}"
+	dataurl = "data:text/plain;base64,#{$.base64Encode(data)}"
 	informDownload()
 	window.open(dataurl, "_blank")
 
@@ -289,3 +290,18 @@ exportSVG = =>
 informDownload = ->
 	if navigator.userAgent.indexOf("Chrome/19") >= 0
 		alert "Your're running Chrome 19.\nThis browser has problems with data-urls,\nsee issue #97108 (chromium), a fix is due in Chrome 20."
+
+examples = ->
+	LSC.loadExample (json) ->
+		@CurrentChart = null
+		@CurrentIndex = 0
+		@Charts = []
+		@paper.clear()
+		@sidebar.clear()
+		for item in json.charts
+			addChart(item, false)
+		@toolbar.setTitle(json.title)
+		if @Charts.length == 0
+			addChart()
+		else
+			switchChart(0)

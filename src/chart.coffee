@@ -1,5 +1,7 @@
 @LSC ?= {}
 
+NextInstNr = 1
+
 class @LSC.Chart
 	constructor: (@paper, @x = 0, @y = cfg.toolbar.height) ->
 		@name = "Untitled Chart"
@@ -180,7 +182,7 @@ class @LSC.Chart
 		m.edit()		if edit
 		return m
 	createInstance: (env) =>
-		i = new LSC.Instance("untitled", @instances.length, env, @paper, @)
+		i = new LSC.Instance("untitled#{NextInstNr++}", @instances.length, env, @paper, @)
 		@instances.push(i)
 		@update()
 		i.edit()

@@ -120,4 +120,56 @@ div.wrapright{
 	margin-top:			10%;
 }
 
+#examples{
+	display:			none;
+	position:			absolute;
+	z-index:			99999999;
+	width:				100%;
+	height:				100%;
+	top:				0px;
+	left:				0px;
+	background-color:	white;
+	overflow:			auto;
+}
 
+#examples div{
+	padding:			30px;
+	cursor:				pointer;
+	overflow:			auto;
+}
+
+#examples div img{
+	float:				left;
+	padding-right:		15px;
+}
+
+#examples div:nth-child(odd){
+	background:		#fff;
+}
+#examples div:nth-child(even){
+	background:		#f6f6f6;
+}
+#examples div:hover{
+	background:		#e6e6e6;
+	-moz-box-shadow: 0 0 3px rgba(0,0,0,0.5);
+	-webkit-box-shadow: 0 0 3px rgba(0,0,0,0.5);
+	box-shadow: 0 0 3px rgba(0,0,0,0.5);
+}
+
+#examples div.topdiv:hover{
+	background:		transparent;
+}
+
+#examples div.topdiv{
+	cursor:				default;
+	padding:			10px;
+	padding-left:		30px;
+}
+
+#examples div.topdiv span{
+	position:			absolute;
+	top:				20px;
+	right:				20px;
+	color:				red;
+	cursor:				pointer;
+}
