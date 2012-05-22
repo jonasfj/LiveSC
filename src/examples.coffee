@@ -13,7 +13,8 @@ LSC.loadExample = (callback) ->
 	close.appendTo(topdiv)
 	topdiv.appendTo("#examples")
 	for ex in LSC.Examples
-		div = $("<div><img src=\"#{ex.image}\"><h2>#{ex.title}</h2><p>#{ex.description}</p></div>")
+		div = $("<div><img src=\"#{ex.image}\"><div><h2>#{ex.title}</h2>#{ex.description}</div></div>")
+		div.addClass("example")
 		div.click do(ex) -> ->
 			callback(ex.json)
 			$("#examples").hide(cfg.animation.speed)
@@ -36,6 +37,16 @@ Example
 
 
 Example
+	title: "Mobile Phone Example"
+	description: """This example models the interaction between the environment, a user and a mobile phone through three scenarios: closing the cover, 
+					receiving a call and talking in the phone.
+					<br/>Source: <a href='http://www.scm.tees.ac.uk/s.qin/papers/tase07.pdf'>Realizing Live Sequence Charts in SystemVerilog</a>"""	
+	image: "images/mobile.png"
+	json: {"title":"Phone.lsc","charts":[{"name":"CloseCover","disabled":false,"lineloc":2,"resloc":6,"locations":7,"instances":[{"name":"User","number":0,"env":true},{"name":"Cover","number":1,"env":false},{"name":"Chip","number":2,"env":false},{"name":"Display","number":3,"env":false}],"messages":[{"name":"close","location":1,"source":"User","target":"Cover"},{"name":"coverClosed","location":3,"source":"Cover","target":"Chip"},{"name":"displayTime","location":4,"source":"Chip","target":"Display"},{"name":"setDisplayTime","location":5,"source":"Display","target":"Display"}]},{"name":"Receive","disabled":false,"lineloc":2,"resloc":6,"locations":7,"instances":[{"name":"Env","number":0,"env":true},{"name":"Chip","number":1,"env":false},{"name":"Speaker","number":2,"env":false},{"name":"Display","number":3,"env":false}],"messages":[{"name":"incomingCall","location":1,"source":"Env","target":"Chip"},{"name":"startRing","location":3,"source":"Chip","target":"Speaker"},{"name":"displayCallerID","location":4,"source":"Chip","target":"Display"},{"name":"setDisplayCaller","location":5,"source":"Display","target":"Display"}]},{"name":"Talk","disabled":false,"lineloc":4,"resloc":9,"locations":11,"instances":[{"name":"Env","number":0,"env":true},{"name":"User","number":1,"env":true},{"name":"Cover","number":2,"env":false},{"name":"Chip","number":3,"env":false},{"name":"Speaker","number":4,"env":false},{"name":"Display","number":5,"env":false}],"messages":[{"name":"open","location":1,"source":"User","target":"Cover"},{"name":"coverOpened","location":2,"source":"Cover","target":"Chip"},{"name":"startRing","location":3,"source":"Chip","target":"Speaker"},{"name":"talk","location":8,"source":"User","target":"Env"},{"name":"speakerOff","location":5,"source":"Chip","target":"Speaker"},{"name":"displayTimer","location":6,"source":"Chip","target":"Display"},{"name":"setDisplayTimer","location":7,"source":"Display","target":"Display"},{"name":"close","location":10,"source":"User","target":"Cover"}]}]}
+
+
+
+Example
 	title: "The Pong/Pongo Disagreement"
 	description: "Two charts disagree about the order in which the server must reply, pong and pongo.<br>This example shows a simple conflict and is not realizable."
 	image: "images/pongo.png"
@@ -47,15 +58,5 @@ Example
 	description: "A man chops a tree, the tree falls and bird move, but bird must move before the tree falls, so not to kill the bird. This example shows how an ordering of messages can be imposed, indirectly. The example is realizable."
 	image: "images/DontKillBird.png"
 	json: {"title":"TreeBird.lsc","charts":[{"name":"Noise Required","disabled":true,"lineloc":3,"resloc":4,"locations":6,"instances":[{"name":"Tree","number":0,"env":false},{"name":"Bird","number":1,"env":false}],"messages":[{"name":"Fall","location":1,"source":"Tree","target":"Tree"},{"name":"Bird","location":2,"source":"Bird","target":"Bird"},{"name":"Noise","location":5,"source":"Tree","target":"Bird"}]},{"name":"Dont Kill Bird","disabled":true,"lineloc":4,"resloc":5,"locations":6,"instances":[{"name":"Tree","number":0,"env":false},{"name":"Bird","number":1,"env":false}],"messages":[{"name":"Fall","location":1,"source":"Tree","target":"Tree"},{"name":"Noise","location":2,"source":"Tree","target":"Bird"},{"name":"Move","location":3,"source":"Bird","target":"Bird"}]},{"name":"Timber!","disabled":false,"lineloc":2,"resloc":5,"locations":6,"instances":[{"name":"Tree","number":0,"env":false},{"name":"Bird","number":1,"env":false},{"name":"Man","number":2,"env":true}],"messages":[{"name":"Chop","location":1,"source":"Man","target":"Man"},{"name":"Move","location":3,"source":"Bird","target":"Bird"},{"name":"Fall","location":4,"source":"Tree","target":"Tree"}]}]}
-
-	
-Example
-	title: "Mobile Phone Example"
-	description: """This example models the interaction between the environment, a user and a mobile phone through three scenarios: closing the cover, 
-					receiving a call and talking in the phone.
-					<br/>Source: <a href='http://www.scm.tees.ac.uk/s.qin/papers/tase07.pdf'>Realizing Live Sequence Charts in SystemVerilog</a>"""	
-	image: "images/mobile.png"
-	json: {"title":"Phone.lsc","charts":[{"name":"CloseCover","disabled":false,"lineloc":2,"resloc":6,"locations":7,"instances":[{"name":"User","number":0,"env":true},{"name":"Cover","number":1,"env":false},{"name":"Chip","number":2,"env":false},{"name":"Display","number":3,"env":false}],"messages":[{"name":"close","location":1,"source":"User","target":"Cover"},{"name":"coverClosed","location":3,"source":"Cover","target":"Chip"},{"name":"displayTime","location":4,"source":"Chip","target":"Display"},{"name":"setDisplayTime","location":5,"source":"Display","target":"Display"}]},{"name":"Receive","disabled":false,"lineloc":2,"resloc":6,"locations":7,"instances":[{"name":"Env","number":0,"env":true},{"name":"Chip","number":1,"env":false},{"name":"Speaker","number":2,"env":false},{"name":"Display","number":3,"env":false}],"messages":[{"name":"incomingCall","location":1,"source":"Env","target":"Chip"},{"name":"startRing","location":3,"source":"Chip","target":"Speaker"},{"name":"displayCallerID","location":4,"source":"Chip","target":"Display"},{"name":"setDisplayCaller","location":5,"source":"Display","target":"Display"}]},{"name":"Talk","disabled":false,"lineloc":4,"resloc":9,"locations":11,"instances":[{"name":"Env","number":0,"env":true},{"name":"User","number":1,"env":true},{"name":"Cover","number":2,"env":false},{"name":"Chip","number":3,"env":false},{"name":"Speaker","number":4,"env":false},{"name":"Display","number":5,"env":false}],"messages":[{"name":"open","location":1,"source":"User","target":"Cover"},{"name":"coverOpened","location":2,"source":"Cover","target":"Chip"},{"name":"startRing","location":3,"source":"Chip","target":"Speaker"},{"name":"talk","location":8,"source":"User","target":"Env"},{"name":"speakerOff","location":5,"source":"Chip","target":"Speaker"},{"name":"displayTimer","location":6,"source":"Chip","target":"Display"},{"name":"setDisplayTimer","location":7,"source":"Display","target":"Display"},{"name":"close","location":10,"source":"User","target":"Cover"}]}]}
-
 
 

@@ -132,24 +132,32 @@ div.wrapright{
 	overflow:			auto;
 }
 
-#examples div{
+#examples div.example{
 	padding:			30px;
 	cursor:				pointer;
 	overflow:			auto;
 }
 
-#examples div img{
+#examples div.example img{
 	float:				left;
 	padding-right:		15px;
 }
 
-#examples div:nth-child(odd){
+#examples div.example div{
+	overflow:			auto;
+}
+
+#examples div.example div h2{
+	margin-top:		0px;
+}
+
+#examples div.example:nth-child(odd){
 	background:		#fff;
 }
-#examples div:nth-child(even){
+#examples div.example:nth-child(even){
 	background:		#f6f6f6;
 }
-#examples div:hover{
+#examples div.example:hover{
 	background:		#e6e6e6;
 	-moz-box-shadow: 0 0 3px rgba(0,0,0,0.5);
 	-webkit-box-shadow: 0 0 3px rgba(0,0,0,0.5);
