@@ -175,7 +175,8 @@ download = =>
 		title:			LSC.escapeName(@toolbar.getTitle())
 		charts:			@Charts
 	# Open data URL
-	dataurl = "data:application/lsc+json;base64,#{$.base64Encode(data)}"
+	dataurl = "data:text/plain;base64,#{$.base64Encode(data)}"
+	informDownload()
 	window.open(dataurl, "_blank")
 
 # Check if event carries file
@@ -259,8 +260,9 @@ getSMV = =>
 	if @CurrentChart?
 		@Charts[@CurrentIndex] = @CurrentChart.toJSON()
 	data = @LSC.toSMV($.secureEvalJSON($.toJSON(@Charts)))
-	dataurl = "data:application/lsc+json;base64,#{$.base64Encode(data)}"
-	window.open(dataurl, "_blank")
+	dataurl = "data:text/plain;base64,#{$.base64Encode(data)}"
+	informDownload()
+	window.open(dataurl)
 
 check = =>
 	if @CurrentChart?
@@ -272,5 +274,10 @@ exportSVG = =>
 	if @CurrentChart?
 		@CurrentChart.clearSelection()
 		data = @CurrentChart.paper.toSVG();
-		dataurl = "data:application/lsc+json;base64,#{$.base64Encode(data)}"
+		dataurl = "data:image/svg+xml;base64,#{$.base64Encode(data)}"
+		informDownload()
 		window.open(dataurl, "_blank")
+
+informDownload = ->
+	if navigator.userAgent.indexOf("Chrome/19") >= 0
+		alert "Your're running Chrome 19.\nThis browser has problems with data-urls,\nsee issue #97108 (chromium), a fix is due in Chrome 20."
