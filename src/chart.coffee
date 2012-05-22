@@ -41,7 +41,8 @@ class @LSC.Chart
 				opacity: 	0
 			@editor.val(@name).focus().select().blur(@unedit).keypress (event) =>
 				@unedit() if event.keyCode == 13
-	unedit: (event) =>				#End name edit
+	
+	unedit: (event) =>				# End name edit
 		if @editor?
 			if @editor.val() == ""
 				event.stopPropagation()
@@ -134,9 +135,9 @@ class @LSC.Chart
 			@addingM = @createMessage(s_num, t_num, loc, "msg", false)
 	mouseMove: (event) =>
 		if isNaN event.pageY
-			log "pis"
+			log "pageY is NaN"
 		if isNaN event.pageX
-			log "pis!"
+			log "pageX is NaN"
 		if @isAddingMessage and @addingM?
 			event.stopPropagation()
 			x = LSC.pageX2RaphaelX(event.pageX)
@@ -256,31 +257,31 @@ class @LSC.Chart
 			return i
 		return null
 	toJSON: =>
-			name:			LSC.escapeName(@name)
+			name:			@name
 			lineloc:		@lineloc
 			resloc:			@resloc
 			locations:		@locations
 			instances:		(i.toJSON() for i in @instances)
 			messages:		(m.toJSON() for m in @messages)
 	@emptyJSON:
-		name: "Untitled Chart"
+		name: "Untitled"
 		lineloc:			1
 		resloc:				2
 		locations:			3
 		instances:			[]
 		messages:			[]
 	fromJSON: (json) =>
-		@name = LSC.unescapeName(json.name)
+		@name = json.name
 		@lineloc = json.lineloc
 		@resloc = json.resloc
 		@locations = json.locations
 		for inst in json.instances
-			@instances.push new LSC.Instance(LSC.unescapeName(inst.name), inst.number, inst.env, @paper, @)
+			@instances.push new LSC.Instance(inst.name, inst.number, inst.env, @paper, @)
 		for msg in json.messages
 			for i in @instances
 				source = i		if i.name == msg.source
 				target = i		if i.name == msg.target
-			@messages.push new LSC.Message(LSC.unescapeName(msg.name), LSC.unescapeName(source), LSC.unescapeName(target), msg.location, @)
+			@messages.push new LSC.Message(msg.name, source, target, msg.location, @)
 		@update(true)
 	serialize: => $.toJSON(@toJSON())
 	deserialize: (data) => @fromJSON($.secureEvalJSON(data))

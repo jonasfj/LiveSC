@@ -35,6 +35,8 @@
 	drag:
 		effect:
 			opacity:		0.8
+	regex:
+		namepattern:		/[A-z]+\w*/g; # Used to sanitize names
 
 # Automatically computed contants
 @cfg.instance.width = @cfg.instance.head.width + @cfg.instance.padding * 2
@@ -252,14 +254,6 @@ dropFile = (event) =>
 		else
 			switchChart(0)
 	reader.readAsText(file)
-
-# escapes special characters
-@LSC.escapeName = (name) ->
-	return name #escape(name)
-
-# unescapes name
-@LSC.unescapeName = (name) ->
-	return name #unescape(name)
 	
 getSMV = =>
 	if @CurrentChart?

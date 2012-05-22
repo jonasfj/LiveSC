@@ -71,15 +71,22 @@ class @LSC.Instance
 			@editor.mousedown (e) -> e.stopPropagation()
 			@editor.val(@name).focus().select().blur(@unedit).keypress (event) =>
 				@unedit() if event.keyCode == 13
-	unedit: (event) =>				#End name edit
+	unedit: (event) =>				# End name edit
 		if @editor?
 			return if @editor.val() == ""
-			inst = @lsc.getInstanceByName(@editor.val().trim())
+			
+			return if !cfg.regex.namepattern.test(@editor.val())
+			
+			# Sanity cleanup with regex
+			val = @editor.val().trim().match(cfg.regex.namepattern).join('')
+			
+			# Check if the name conflicts with another instance
+			inst = @lsc.getInstanceByName(val)
 			if inst? and inst.number != @number
 				@editor.val(@name)
 				@editor.css("background","yellow").focus()
 				return
-			@name = @editor.val().trim()
+			@name = val
 			@text.attr
 				text: @name
 				opacity: 1
@@ -105,7 +112,7 @@ class @LSC.Instance
 		@selected = false
 		@head.update
 			"fill-opacity":	0
-	toJSON: => name: LSC.escapeName(@name), number: @number, env: @env
+	toJSON: => name: @name, number: @number, env: @env
 	remove: =>
 		@head.remove()
 		@line.remove()

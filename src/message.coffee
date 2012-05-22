@@ -106,13 +106,19 @@ class @LSC.Message
 	unedit: (event) =>				#End edit
 		if @editor?
 			return if @editor.val() == ""
-			@name = @editor.val()
+			
+			return if !cfg.regex.namepattern.test(@editor.val())
+			
+			# Sanity cleanup with regex
+			val = @editor.val().trim().match(cfg.regex.namepattern).join('')
+			
+			@name = val
 			@text.attr
 				text: @name
 				opacity: 1
 			@editor.remove()
 			@editor = null
-	toJSON: => name: LSC.escapeName(@name), location: @location, source: LSC.escapeName(@source.name), target: LSC.escapeName(@target.name)
+	toJSON: => name: @name, location: @location, source: @source.name, target: @target.name
 	remove: =>
 		@text.remove()
 		@rect.remove()
