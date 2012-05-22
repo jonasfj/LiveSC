@@ -26,9 +26,13 @@ class @LSC.Instance
 		x = @lsc.numberX(@number)
 		pad = cfg.instance.padding
 
+		# draw as env or system object
 		if @env
 			@head.attr
-				"stroke-dasharray":"."
+				"stroke-dasharray":"--"
+		else
+			@head.attr
+				"stroke-dasharray":""
 
 		@head.update
 			x: 			x - cfg.instance.head.width / 2
