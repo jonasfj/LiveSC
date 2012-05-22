@@ -129,6 +129,7 @@ instant = false
 	new @LSC.Button("plus", "Add controller instance", toolbar).click 	-> CurrentChart?.createInstance(false)
 	new @LSC.Button("SwitchType", "Switch instance type (env/sys)", toolbar).click -> CurrentChart?.changeInstanceType()
 	new @LSC.Button("exchange", "Add message", toolbar).click 			-> CurrentChart?.addMessage()
+	new @LSC.Button("cross", "Toggle enabledness of mainchart", toolbar).click			-> CurrentChart?.toggleEnabledness()
 	new @LSC.Button("trash", "Delete selection", toolbar).click 		-> CurrentChart?.deleteSelection()
 	new @LSC.Button("cloudDown", "Download project", toolbar).click		download
 	new @LSC.Button("picture", "Export Chart as SVG", toolbar).click	exportSVG

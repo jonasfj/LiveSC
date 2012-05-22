@@ -27,10 +27,12 @@ checkAppletReady = ->
 
 # Initialize the applet
 Applet.checkRealizability = (model) ->
-	nextModel = model
-	if Applet.initialize()
-		executeCheck()
-
+	if model?
+		nextModel = model
+		if Applet.initialize()
+			executeCheck()
+	else
+		log "No model was provided."
 executeCheck = ->
 	if nextModel?
 		app = document.getElementById("applet")
