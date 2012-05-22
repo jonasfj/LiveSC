@@ -75,7 +75,11 @@ class @LSC.Toolbar
 
 class @LSC.Button
 	constructor: (icon, @tooltip, @toolbar) ->
-		@icon = @toolbar.paper.path(Icons[icon])
+		if Icons[icon]?
+			p = Icons[icon]
+		else
+			p = LSC.Icons[icon]
+		@icon = @toolbar.paper.path(p)
 		@icon.attr
 			fill:	"#777"
 			stroke:	"#fff"
