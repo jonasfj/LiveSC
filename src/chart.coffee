@@ -2,7 +2,8 @@
 
 class @LSC.Chart
 	constructor: (@paper, @x = 0, @y = cfg.toolbar.height) ->
-		@name = "Untitled Chart"
+		@name = "Untitled"
+		@disabled = false
 		@messages = []
 		@instances = []
 		@lineloc = 1			#Location between pre- and postchart
@@ -59,7 +60,7 @@ class @LSC.Chart
 		LSC.instant() if instant
 		width = Math.max(cfg.instance.width * @instances.length, cfg.chart.minwidth)
 		preheight = cfg.instance.head.height + cfg.margin + cfg.location.height * @lineloc
-		#redraw prechart
+		# redraw prechart
 		@prechart.update
 			path: """M #{@x + cfg.margin + cfg.prechart.padding} #{@y + cfg.margin}
 					 h #{width}
@@ -68,28 +69,39 @@ class @LSC.Chart
 					 h -#{width}
 					 l -#{cfg.prechart.padding} -#{preheight/2} z"""
 		postheight = 2*cfg.margin + cfg.location.height * (@resloc - @lineloc)
-		#redraw body
+		# redraw body
 		@postchart.update
 			path: """M #{@x + cfg.margin + cfg.prechart.padding},#{@y + cfg.margin + preheight}
 					 h #{width} v #{postheight} h -#{width} z"""
+					 
+		# if chart is false
+		if @disabled
+			@postchart.update
+				path: """M #{@x + cfg.margin + cfg.prechart.padding},#{@y + cfg.margin + preheight}
+						 h #{width} v #{postheight} h -#{width} z
+						 M #{@x + cfg.margin + cfg.prechart.padding},#{@y + cfg.margin + preheight}
+						 L #{@x + cfg.margin + cfg.prechart.padding + width},#{@y + cfg.margin + preheight + postheight}
+						 M #{@x + cfg.margin + cfg.prechart.padding + width},#{@y + cfg.margin + preheight}
+						 L #{-@x + cfg.margin + cfg.prechart.padding}, #{@y + cfg.margin + preheight + postheight}
+						 """
 
 		restrictheight = cfg.location.height * (@locations - @resloc) - cfg.location.height;
 
-		#restricts chart
+		# restricts chart
 		@restrictchart.update
 			path: """M #{@x + cfg.margin + cfg.prechart.padding},#{@y + cfg.margin + preheight + postheight}
 					 h #{width} v #{restrictheight} h -#{width} z"""
 
-		#redraw instances
+		# redraw instances
 		for instance in @instances
 			yi = @y + 2 * cfg.margin			# Why is there an y here???
 			hi = preheight + postheight - cfg.margin * 2
 			instance.update(yi, hi)
-		#redraw messages
+		# redraw messages
 		for message in @messages
 			message.update()
 		height = @y + cfg.margin + preheight + postheight + cfg.margin + restrictheight
-		#redraw title
+		# redraw title
 		@title.attr
 			text: @name
 		@updateSize(@x + 2 * (cfg.margin + cfg.prechart.padding) + width, height)
@@ -260,6 +272,10 @@ class @LSC.Chart
 	changeInstanceType: =>
 		for i in @instances when i.selected
 			i.env = !i.env
+		@update()
+	# toggle enabledness of the chart
+	toggleEnabledness: =>
+		@disabled = !@disabled
 		@update()
 	toJSON: =>
 			name:			@name
