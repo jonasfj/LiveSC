@@ -24,8 +24,6 @@ clean:
 	rm -f jtlv.jar
 	rm -f Applet.jar
 	rm -f LSCSMVChecker.jar
-	rm -f LSCSMVChecker.tar.gz
-	rm -f Applet.tar.gz
 	rm TS.smv
 ifdef lsc
 test: LSCSMVChecker.jar
