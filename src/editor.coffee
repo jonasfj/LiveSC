@@ -135,6 +135,7 @@ instant = false
 	new @LSC.Button("picture", "Export Chart as SVG", toolbar).click	exportSVG
 	new @LSC.Button("download", "Export SMV code", toolbar).click		getSMV
 	new @LSC.Button("arrowright", "Check realizability", toolbar).click	check
+	new @LSC.Button("magic", "Synthesis a strategy", toolbar).click		synthesize
 	new @LSC.Button("star3off", "Load example", toolbar).click			examples
 
 	# Add new empty chart
@@ -278,7 +279,17 @@ check = =>
 	catch error
 		alert "An error occurred during translation.\nPlease provide at least one message."
 		return
-	LSC.Applet.checkRealizability(smv)
+	LSC.Applet.check(smv)
+
+synthesize = =>
+	if @CurrentChart?
+		@Charts[@CurrentIndex] = @CurrentChart.toJSON()
+	try
+		smv = LSC.toSMV($.secureEvalJSON($.toJSON(@Charts)))
+	catch error
+		alert "An error occurred during translation.\nPlease provide at least one message."
+		return
+	LSC.Applet.synthesize(smv)
 
 exportSVG = =>
 	if @CurrentChart?

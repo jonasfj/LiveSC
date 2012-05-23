@@ -6,6 +6,7 @@
 initialized = false
 initializing = false
 nextModel = null
+synthesize = false
 
 Applet.initialize = -> 
 	unless initializing or initialized
@@ -26,13 +27,25 @@ checkAppletReady = ->
 		executeCheck()
 
 # Initialize the applet
-Applet.checkRealizability = (model) ->
+Applet.check = (model) ->
 	if model?
 		nextModel = model
+		synthesize = false
 		if Applet.initialize()
 			executeCheck()
 	else
 		log "No model was provided."
+
+# Initialize the applet
+Applet.synthesize = (model) ->
+	if model?
+		nextModel = model
+		synthesize = true
+		if Applet.initialize()
+			executeCheck()
+	else
+		log "No model was provided."
+
 executeCheck = ->
 	if nextModel?
 		app = document.getElementById("applet")
@@ -41,6 +54,8 @@ executeCheck = ->
 			if retval == ""
 				if app.game().realizable()
 					alert "Model is realizable!"
+					if synthesize
+						alert app.game().synthesize()
 				else
 					alert "Model is NOT realizable!"
 			else
