@@ -16,12 +16,23 @@ The relevant `makefile` can be located in the `applet/` folder of the repository
 
 License
 -------
-LiveSC is licensed under GNU GPL.
+  * LiveSC is licensed under GNU GPL.
+  * [Rapheal icons](http://raphaeljs.com/icons/) by Dmitry Baranovskiy are MIT.
+  * [JTLV](http://jtlv.ysaar.net/) is GNU (L)GPL.
+  * [JavaBDD](http://javabdd.sourceforge.net/) is also GNU (L)GPL.
+  * [ANTLR](http://www.antlr.org/) is under the [ANTLR 3 License](http://www.antlr.org/license.html).
+  * [IcedTea-Web](http://icedtea.classpath.org/wiki/IcedTea-Web) is GNU GPL.
+  * [Raphael.Export](https://github.com/ElbertF/Raphael.Export) by Elbert Foo is MIT licensed.
+  * [Raphaël](http://raphaeljs.com/) is also MIT.
+  * [jquery-json](http://code.google.com/p/jquery-json/) is MIT.
+  * [jquery.base64](http://www.semnanweb.com/jquery-plugin/base64.html) is GNU GPL.
+  * [jquery](http://jquery.org/) is MIT.
+  * [JDD](http://javaddlib.sourceforge.net/jdd/) is zlib license.
 
 Authors
 -------
-  * Jonas Finnemann Jensen,
-  * Lars Kærlund Østergaard,
-  * Lisa Fontani, and
-  * Daniel Ejsing-Duun.
+  * Jonas Finnemann Jensen
+  * Lars Kærlund Østergaard
+  * Lisa Fontani
+  * Daniel Ejsing-Duun
 
