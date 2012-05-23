@@ -278,7 +278,9 @@ instant = false
 	addChart()
 
 	# Hide welcome dialog on click
-	$("#welcomedialog").click -> $("#welcomedialog").fadeOut cfg.animation.speed
+	$("#welcomedialog").click ->
+		$("#welcomedialog").fadeOut cfg.animation.speed, ->
+			$("#welcometitle").html("Helpful Instructions")
 
 # Initialize editor
 $ LSC.initialize
