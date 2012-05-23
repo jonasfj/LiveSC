@@ -179,6 +179,7 @@ div.wrapright{
 	padding:			30px;
 	cursor:				pointer;
 	overflow:			auto;
+	margin-bottom:		2px;
 }
 
 #examples div.example img{
