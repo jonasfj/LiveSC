@@ -48,7 +48,7 @@
 
 # Set page title
 @setDocTitle = (title) =>
-	document.title = "#{cfg.app.name}: " + title
+	document.title = "#{cfg.app.name} - " + title
 
 # Current Chart
 @CurrentChart = null
@@ -123,22 +123,162 @@ instant = false
 	@sidebar = new @LSC.Sidebar($("#chartlist"))
 
 	#### Initialize toolbar
-	@toolbar = new @LSC.Toolbar("#toolbar")
-	new @LSC.Button("AddChart", 	"Add chart", 				"#toolbar").click -> addChart()
-	new @LSC.Button("plus", 		"Add controller instance",	"#toolbar").click -> CurrentChart?.createInstance(false)
-	new @LSC.Button("SwitchType", 	"Toggle instance type",		"#toolbar").click -> CurrentChart?.changeInstanceType()
-	new @LSC.Button("exchange", 	"Add message", 				"#toolbar").click -> CurrentChart?.addMessage()
-	new @LSC.Button("cross", 		"Toggle FALSE mainchart", 	"#toolbar").click -> CurrentChart?.toggleEnabledness()
-	new @LSC.Button("trash", 		"Delete selection", 		"#toolbar").click -> CurrentChart?.deleteSelection()
-	new @LSC.Button("cloudDown", 	"Download project", 		"#toolbar").click download
-	new @LSC.Button("picture", 		"Export Chart as SVG", 		"#toolbar").click exportSVG
-	new @LSC.Button("download", 	"Export SMV code", 			"#toolbar").click getSMV
-	new @LSC.Button("arrowright", 	"Check realizability", 		"#toolbar").click check
-	new @LSC.Button("magic", 		"Synthesize a strategy", 	"#toolbar").click synthesize
-	new @LSC.Button("star3off", 	"Load example", 			"#toolbar").click examples
+	@LSC.Toolbar.initialize()
+
+	@LSC.Button
+		icon:		"AddChart"
+		tooltip:	"Add chart to specification"
+		help:		"""
+					Adds a <b>new chart</b> to the current specification project.
+					Notice that all chart in the project
+					must be satisfied by any realization. Typically charts are used to express independent
+					senarios or counter examples.
+					"""
+		action:		 -> addChart()
+
+	@LSC.Button
+		icon:		"plus"
+		tooltip:	"Add system instance"
+		help:		"""
+					Adds a system <b>instance to the current chart</b>. You can change the instance type from
+					system to environment type later. Remember that instance names are unique within
+					a given chart. Instance type must also match type of the same instance in other
+					charts.
+					"""
+		action:		 -> CurrentChart?.createInstance(false)
+
+	@LSC.Button
+		icon:		"SwitchType"
+		tooltip:	"Toggle instance type (sys/env)"
+		help:		"""
+					Toggle instance type, ie. convert <b>system instance to environment instances</b>
+					and vice versus.
+					Notice that the type of instances with same name in other charts will also change.
+					"""
+		action:		 -> CurrentChart?.changeInstanceType()
+
+	@LSC.Button
+		icon:		"exchange"
+		tooltip:	"Add message"
+		help:		"""
+					Add a <b>message exchange</b> to the current chart. Two messages are equal to if they have the
+					same name and go from the same sender to the same receiver.
+					Messages in the forbidden section, will abort the prefix and are not allowed to occur
+					in an execution of the main chart.
+					"""
+		action:		 -> CurrentChart?.addMessage()
+
+	@LSC.Button
+		icon:		"cross"
+		tooltip:	"Toggle FALSE main chart"
+		help:		"""
+					Toggle <b>false main chart</b>, meaning that we consider the main chart impossible to satisfy.
+					This is equivalent to requiring that the prechart is never completed.
+					Note, any messages in the main chart will be ignored and are of no importance here.
+					"""
+		action:		 -> CurrentChart?.toggleEnabledness()
+
+	@LSC.Button
+		icon:		"trash"
+		tooltip:	"Delete selection"
+		help:		"""
+					<b>Deletes</b> the current select, be it a message or and instance.
+					Note that if you delete and instance the associated messages will also be removed.
+					"""
+		action:		 -> CurrentChart?.deleteSelection()
+
+	@LSC.Separator()
+
+	@LSC.Button
+		icon:		"cloudDown"
+		tooltip:	"Download project as JSON file"
+		help:		"""
+					Export <b>project as JSON</b>. The file can be saved to disk and drag 'n' dropped back
+					into this editor at any time. Thus, enabling you to save your projects.
+					"""
+		action:		 download
+
+	@LSC.Button
+		icon:		"picture"
+		tooltip:	"Export Chart as SVG"
+		help:		"""
+					Export current <b>chart as SVG</b>. With the ability to open, edit and export these files from
+					<a href='http://inkscape.org/'>Inkscape</a> this is quick way to generate high quality
+					live sequence charts with annotations.
+					"""
+		action:		 exportSVG
+
+	@LSC.Button
+		icon:		"download"
+		tooltip:	"Export SMV code"
+		help:		"""
+					Export the <b>transistion system</b> of 'repeated reachability' game this project was
+					translated to. You can use this to check realizability and synthesize a strategy
+					using a commandline version of our engine downloadable from 
+					<a href='https://github.com/jopsen/LiveSC' target='_blank'>github</a>.
+					"""
+		action:		 getSMV
+
+	@LSC.Separator()
+
+	@LSC.Button
+		icon:		"arrowright"
+		tooltip:	"Check realizability"
+		help:		"""
+					<b>Check realizability</b> of the current specification project.
+					This will lazy load a Java applet and for large projects this will not finish
+					any time soon. Consider saving your project before trying this feature.
+					"""
+		action:		 check
+
+	@LSC.Button
+		icon:		"magic"
+		tooltip:	"Synthesize a strategy"
+		help:		"""
+					Check realizability and <b>synthesize a strategy</b> for the system, if the current
+					specification project is realizable. At the moment we only inform you about
+					the size of the BDD for representation of the transision system.
+					"""
+		action:		 synthesize
+
+	@LSC.FloatRight()
+
+	@LSC.Button
+		icon:		"githubalt"
+		tooltip:	"More information about this project on github"
+		help:		"""
+					This project is hosted at <a href='https://github.com/jopsen/LiveSC' target='_blank'>
+					github</a>, sources are available under
+					<a href='http://www.gnu.org/licenses/gpl.html' target='_blank'>GNU GPL</a>.<br>
+					Feel free to <b>fork and play</b> around if you feel like it.
+					"""
+		action:		 -> window.open("https://github.com/jopsen/LiveSC", "_blank")
+
+	@LSC.Button
+		icon:		"help"
+		tooltip:	"Display some helpful instructions"
+		help:		"""
+					Display these <b>helpful instructions</b>, they will also be shown whenever
+					LiveSC is opened. Just click anywhere to make them go away.
+					But not yet, please finish reading this list first, the best is saved for last.
+					"""
+		action:		 -> $("#welcomedialog").fadeIn cfg.animation.speed
+
+	@LSC.Button
+		icon:		"star3"
+		tooltip:	"Load example from gallery"
+		help:		"""
+					Load example from our very neat <b>example gallery</b>. Each example comes with a
+					little explanatory text, that gives your a hit about why this might be important.
+					Notice that some of the examples are so large that we can't handle at this point.
+					"""
+		action:		 examples
 
 	# Add new empty chart
 	addChart()
+
+	# Hide welcome dialog on click
+	$("#welcomedialog").click -> $("#welcomedialog").fadeOut cfg.animation.speed
 
 # Initialize editor
 $ LSC.initialize
@@ -185,7 +325,7 @@ download = =>
 		@Charts[@CurrentIndex] = @CurrentChart.toJSON()
 	# Put everything into JSON
 	data = $.toJSON
-		title:			@toolbar.getTitle()
+		title:			LSC.Toolbar.getTitle()
 		charts:			@Charts
 	# Open data URL
 	dataurl = "data:application/octet-stream;base64,#{$.base64Encode(data)}"
@@ -264,7 +404,7 @@ dropFile = (event) =>
 		data = $.secureEvalJSON(reader.result)
 		for item in data.charts
 			addChart(item, false)
-		@toolbar.setTitle(data.title)
+		LSC.Toolbar.setTitle(data.title)
 		setDocTitle(data.title)
 		if @Charts.length == 0
 			addChart()
@@ -331,7 +471,7 @@ examples = ->
 		@sidebar.clear()
 		for item in json.charts
 			addChart(item, false)
-		@toolbar.setTitle(json.title)
+		LSC.Toolbar.setTitle(json.title)
 		setDocTitle(json.title)
 		if @Charts.length == 0
 			addChart()

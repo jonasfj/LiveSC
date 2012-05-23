@@ -1,5 +1,3 @@
-
-
 @LSC ?= {}
 
 # Array of example systems
@@ -15,7 +13,7 @@ LSC.loadExample = (callback) ->
 	$("<h1>Pick an Example</h1>").appendTo(topdiv)
 	close = $("<span style=\"float:right;\">(Close)</span>")
 	close.click ->
-		$("#examples").hide(cfg.animation.speed)
+		$("#examples").fadeOut(cfg.animation.speed)
 	close.appendTo(topdiv)
 	topdiv.appendTo("#examples")
 	for ex in LSC.Examples
@@ -23,9 +21,9 @@ LSC.loadExample = (callback) ->
 		div.addClass("example")
 		div.click do(ex) -> ->
 			callback(ex.json)
-			$("#examples").hide(cfg.animation.speed)
+			$("#examples").fadeOut(cfg.animation.speed)
 		div.appendTo("#examples")
-	$("#examples").show(cfg.animation.speed)
+	$("#examples").fadeIn(cfg.animation.speed)
 
 Example
 	title: "Ping/Pong Example"

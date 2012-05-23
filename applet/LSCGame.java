@@ -69,7 +69,7 @@ public class LSCGame{
 		}
 		win = z;
 		if(reporter != null)
-			reporter.report("\n");
+			reporter.report("\\n");
 	}
 
 	/** Controllable Predecessors */
