@@ -121,16 +121,25 @@ OutputSMV = ->
 # Auxiliary Variable name functions
 
 # Location variable
-Loc = (inst, chart) ->
+Loc = (inst, chart, c) ->
 	unless typeof inst is 'string'
 		inst = inst.name
-	return "Loc_#{inst}_#{chart.number}"
+	return "Loc_#{inst}_#{chart.number}_#{c}"
 
 # Active Variable
-Active = (chart) -> "active_#{chart.number}"
+Active = (chart, c) -> "active_#{chart.number}_#{c}"
 
 # Message variable name
 Msg = (m) -> "#{m.name}_#{m.source}_#{m.target}"
+
+Started = (chart, c) -> "started_#{chart.number}_#{c}"
+
+gbi = (chart, c) ->
+	if typeof chart is 'number'
+		n = chart
+	else
+		n = chart.number 
+	return "gbi_#{n}_#{c}"
 
 @LSC.toSMV = (charts, quite = true) ->
 	Quite = quite
@@ -183,7 +192,7 @@ Msg = (m) -> "#{m.name}_#{m.source}_#{m.target}"
 				m.prevDstLocs = [0, 1]
 			if m.location > chart.resloc
 				m.prevSrcLocs = m.prevDstLocs = []
-
+		chart.copies = [1..chart.messages.length]
 
 	return null if not StartSMV()
 
@@ -195,24 +204,41 @@ Msg = (m) -> "#{m.name}_#{m.source}_#{m.target}"
 	Module "environment", ["sys_msg", "current_player"]
 
 	Var ->
-		Declare "env_msg", 			"0..#{env.messageNames.length}"
-		Declare "gbuchi",			[0, 1, 2]
-		Declare (Loc inst, chart),	[inst.locations..., inst.maxLoc + 1]			for inst in chart.instances for chart in charts
+		Declare "env_msg", 				"0..#{env.messageNames.length}"
+		chartcopies = []
+		for chart in charts
+			for c in chart.copies
+				chartcopies.push (gbi chart, c)
+		Declare "gbuchi",				[0, chartcopies..., (gbi charts.length, 1)]
+		for chart in charts
+			for c in chart.copies
+				for inst in chart.instances 
+					Declare (Loc inst, chart, c),	[inst.locations..., inst.maxLoc + 1]
 
 	Define ->
-		active_cond = (chart) -> (And (V(Loc inst, chart) Geq C(inst.maxPreLoc) 	for inst in chart.instances))
-		Definition (Active chart),	active_cond(chart)								for chart in charts
+		active_cond = (chart, i) -> (And (V(Loc inst, chart, i) Geq C(inst.maxPreLoc) for inst in chart.instances))
+		Definition (Active chart, i),	active_cond(chart, i)						for i in chart.copies for chart in charts
+		started_cond = (chart, i) -> (Or (V(Loc inst, chart, i) Geq C(1) for inst in chart.instances))
+		Definition (Started chart, i),	started_cond(chart, i)						for i in chart.copies for chart in charts
 
 	Assign ->
-		Init "env_msg",				C(0)
-		Init (Loc inst, chart),		C(1)											for inst in chart.instances for chart in charts
-		Init "gbuchi",				C(0)
+		Init "env_msg",								C(0)
+		Init "gbuchi",								C(0)
+		for chart in charts
+			for inst in chart.instances
+				for i in chart.copies
+					Init (Loc inst, chart, i),		C(1)
 		
 		Comment "Winning condition, encoded as generalized buchi automata"
 		Next "gbuchi", Switch ->
-			Case (V('gbuchi') Eq C(0)),																		C(1)
-			Case (V('gbuchi') Eq C(1) And (And (V(Active chart) Eq False for chart in charts))), 			C(2)
-			Case (V('gbuchi') Eq C(2) And V('current_player') Eq C("ENV")),									C(0)
+			Case (V('gbuchi') Eq C(0)),																		C(gbi 0, 1)
+			for chart in charts
+				for c in chart.copies
+					if c is chart.messages.length
+						Case (V('gbuchi') Eq C(gbi chart, c) And V(Active chart, c) Eq False), 				C(gbi chart.number + 1, 1)
+					else
+						Case (V('gbuchi') Eq C(gbi chart, c) And V(Active chart, c) Eq False), 				C(gbi chart, c + 1)
+			Case (V('gbuchi') Eq C(gbi charts.length, 1) And V('current_player') Eq C("ENV")),				C(0)
 			Case True,																						V('gbuchi')
 
 		Comment "A Message can be fired if current_player is ENV"
@@ -220,15 +246,14 @@ Msg = (m) -> "#{m.name}_#{m.source}_#{m.target}"
 			Case (V('current_player') Eq C('ENV')),															C("0..#{env.messageNames.length}")
 			Case True,																						C(0)
 
-		Next (Loc inst, chart), (Switch ->
-			
+		Next (Loc inst, chart, c), (Switch ->
 			# FALSE chart
 			if chart.disabled
 				Comment "Go to dead state, since mainchart is false"
-				Case (V(Active chart) Eq True),											C(inst.maxLoc + 1)
+				Case (V(Active chart, c) Eq True),										C(inst.maxLoc + 1)
 				
 			Comment "Reset if any other locations in this chart decides to reset"
-			does_reset = (i)-> V(Loc i, chart) Neq C(0) And N(Loc i, chart) Eq C(0)
+			does_reset = (i)-> V(Loc i, chart, c) Neq C(0) And N(Loc i, chart, c) Eq C(0)
 			Case (Or (does_reset(i) for i in chart.instances when i isnt inst)),		C(1)
 
 			# Messages relevant to this instance line
@@ -240,26 +265,30 @@ Msg = (m) -> "#{m.name}_#{m.source}_#{m.target}"
 
 			# Helper conditions
 			in_mainchart = (m) -> if m.location > chart.lineloc then True else False
-			move_msg = (m) -> V(Loc m.source, chart) In Set(m.prevSrcLocs) And V(Loc m.target, chart) In Set(m.prevDstLocs) And m.fires
+			if c isnt 1
+				may_move = V(Started chart, c) Eq True Or (And (V(Started chart, ci) Eq True for ci in chart.copies when ci < c))
+			else
+				may_move = True
+			move_msg = (m) -> V(Loc m.source, chart, c) In Set(m.prevSrcLocs) And V(Loc m.target, chart, c) In Set(m.prevDstLocs) And m.fires And may_move
 			
 			Comment "Reset on last message if others are at end or resetting too"
-			at_end = (And (V(Loc i, chart) Eq C(i.maxLoc) for i in chart.instances when i.name not in [last_msg.source, last_msg.target]))
+			at_end = (And (V(Loc i, chart, c) Eq C(i.maxLoc) for i in chart.instances when i.name not in [last_msg.source, last_msg.target]))
 			Case (move_msg(last_msg) And at_end),										C(0)					if last_msg isnt null
 
 			Comment "Move forward on each message on this instance line"
-			Case (move_msg(m) And V(Active chart) Eq in_mainchart(m)),					C(m.location)			for m in msgs
+			Case (move_msg(m) And V(Active chart, c) Eq in_mainchart(m)),				C(m.location)			for m in msgs
 
 			Comment "If message is relevant and chart inactive reset pre-chart"
-			Case (V(Active chart) Eq False And m.fires), 								C(0) 					for m in relevant_msgs
+			Case (V(Active chart, c) Eq False And m.fires), 							C(0) 					for m in relevant_msgs
 			
 			Comment "If message is relevant and chart active go to dead location"
-			Case (V(Active chart) Eq True And m.fires),									C(inst.maxLoc + 1) 		for m in relevant_msgs
+			Case (V(Active chart, c) Eq True And m.fires),								C(inst.maxLoc + 1) 		for m in relevant_msgs
 
-			Comment "Clean-up the reset operation, not strictly necessary but nice"
-			Case (V(Loc inst, chart) Eq C(0)),											C(1)
+			Comment "Clean-up the reset operation"
+			Case (V(Loc inst, chart, c) Eq C(0)),										C(1)
 
-			Case True,																	V(Loc inst, chart)
-		)	for inst in chart.instances for chart in charts
+			Case True,																	V(Loc inst, chart, c)
+		)	for inst in chart.instances for c in chart.copies for chart in charts
 
 
 	Module "system", []

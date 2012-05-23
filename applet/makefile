@@ -4,14 +4,14 @@ Applet.jar: jtlv.jar Applet.java
 	rm -f Applet.jar
 	rm -rf bin/Applet/
 	mkdir -p bin/Applet/
-	javac Applet.java LSCGame.java -d bin/Applet/ -classpath jtlv.jar:$(LIBS)
+	javac Applet.java LSCGame.java ProgressReporter.java -d bin/Applet/ -classpath libs/plugin.jar:jtlv.jar:$(LIBS)
 	cd bin/Applet/; find | xargs jar -cf Applet.jar; cd -
 	cp bin/Applet/Applet.jar Applet.jar
 LSCSMVChecker.jar: jtlv.jar LSCSMVChecker.java
 	rm -f LSCSMVChecker.jar
 	rm -rf bin/LSCSMVChecker/
 	mkdir -p bin/LSCSMVChecker/
-	javac LSCSMVChecker.java LSCGame.java -d bin/LSCSMVChecker/ -classpath jtlv.jar:$(LIBS)
+	javac LSCSMVChecker.java ProgressReporter.java LSCGame.java -d bin/LSCSMVChecker/ -classpath jtlv.jar:$(LIBS)
 	cd bin/LSCSMVChecker/; find | xargs jar -cfe LSCSMVChecker.jar LSCSMVChecker; cd -
 	cp bin/LSCSMVChecker/LSCSMVChecker.jar LSCSMVChecker.jar
 jtlv.jar:
@@ -24,7 +24,7 @@ clean:
 	rm -f jtlv.jar
 	rm -f Applet.jar
 	rm -f LSCSMVChecker.jar
-	rm TS.smv
+	rm -f TS.smv
 ifdef lsc
 test: LSCSMVChecker.jar
 	@clear

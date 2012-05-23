@@ -1,8 +1,16 @@
 import edu.wis.jtlv.env.spec.*;
+import edu.wis.jtlv.env.*;
 import java.io.*;
 
 /** Command line version of LSC SMV Model checker. */
 public class LSCSMVChecker {
+	/** Console progress reporter */
+	private static class ConsoleProgressReporter implements ProgressReporter{		
+		/** Handle information */
+		public void report(String info){
+			System.out.print(info);
+		}
+	}
 
 	/** Main method for command line application. Reads an input file and runs an LSCGame. 
 	 * @returns 0 if there were no errors.
@@ -10,8 +18,9 @@ public class LSCSMVChecker {
 	public static void main(String[] args) 
 		throws IOException,IllegalArgumentException {
 		// Welcome message
-		System.out.println("LSC SMV Model Checker initialized.");
-
+		System.out.println("LSC SMV Model Checker\n");
+		System.out.println("Using: " + Env.getFactoryName() + "\n");
+		
 		// input filename and available commands
 		String file = "";
 		boolean check = false;
@@ -28,6 +37,7 @@ public class LSCSMVChecker {
 				synthesize = true;
 			} else if (args[i].equals("--help")){
 				//TODO: Show help and exit
+				System.out.println("");
 				System.exit(0);
 			}
 		}
@@ -41,24 +51,14 @@ public class LSCSMVChecker {
 			System.exit(4);
 		}
 
-		// Read file contents 
-		String model = "";
-		try {
-			BufferedReader input = new BufferedReader(new FileReader(file));
-			while(input.ready())
-				model += (char)input.read();
-			input.close();
-		} catch (IllegalArgumentException ex) {
-			System.out.println("Error: Please provide a valid input file.");
-			System.exit(3);
-		} catch (IOException ex) {
-			System.out.println("An error occurred reading the input file.");
-			System.exit(3);
-		}
-
 		// Run the LSC Game
 		try {
-			LSCGame game = new LSCGame(model);
+			// Load Transition System
+			Env.loadModule(file);
+
+			System.out.println("System: " + Env.getModule("main.env").trans().getFactory().getVersion() );
+
+			LSCGame game = new LSCGame(new ConsoleProgressReporter());
 			// Realizability
 			if(check){
 				if(game.realizable()) {
@@ -69,9 +69,8 @@ public class LSCSMVChecker {
 				}
 			}
 			// Synthesis
-			if(synthesize){
+			if(synthesize)
 				System.out.println(game.synthesize());
-			}
 		} catch(SpecException ex){
 			System.out.println("Failed to create internal constraints on model (SMV module malformed)!");
 			System.exit(2);

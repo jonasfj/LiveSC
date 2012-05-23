@@ -5,16 +5,16 @@ NextInstNr = 1
 class @LSC.Chart
 	constructor: (@paper, @x = 0, @y = cfg.toolbar.height) ->
 		@name = "Untitled"
-		@disabled = false
+		@disabled = false		# If set to 'true', the mainchart is FALSE
 		@messages = []
 		@instances = []
 		@lineloc = 1			#Location between pre- and postchart
 		@locations = 3			#number of locations in chart
-		@resloc = 2				#Location between post- and restrictchart
-		@prechart = @paper.path("")
+		@resloc = 2				#Location between post- and forbidden box
+		@prechart = @paper.path("")		#box for prechart
 		@prechart.attr
 			"stroke-dasharray": "--"
-		@postchart = @paper.path("")
+		@postchart = @paper.path("")	 #box for mainchart
 		@restrictchart = @paper.path("") #box for restricted messages
 		@isAddingMessage = false
 		@addingM = null
@@ -23,6 +23,12 @@ class @LSC.Chart
 		@title.attr
 			"font-size": 			24
 			"text-anchor":			'start'
+			title :"Double-click to edit the title"
+		@title.hover(
+			=> @title.attr
+				cursor:"text",
+			=> @title.attr
+				cursor:"default")
 		@title.dblclick(@edit)
 	change: (callback) -> #Til sidebar fra editor-klassen
 		if callback?
@@ -76,7 +82,7 @@ class @LSC.Chart
 			path: """M #{@x + cfg.margin + cfg.prechart.padding},#{@y + cfg.margin + preheight}
 					 h #{width} v #{postheight} h -#{width} z"""
 					 
-		# if chart is false
+		# if chart is FALSE, draw a cross over the mainchart
 		if @disabled
 			@postchart.update
 				path: """M #{@x + cfg.margin + cfg.prechart.padding},#{@y + cfg.margin + preheight}
@@ -252,8 +258,10 @@ class @LSC.Chart
 			msg.location -= 1
 		@messages = (msg for msg in @messages when msg != m)
 		m.remove()
+		# only decrease this if msg in prechart
 		@lineloc -= 1 if m.location < @lineloc
-		@resloc -= 1 #TODO: check if this works
+		# only decrease this if msg not in forbidden box
+		@resloc -= 1 if m.location < @resloc
 		@locations -= 1
 	deleteInstance: (i) =>
 		for inst in @instances when inst.number > i.number
@@ -270,10 +278,31 @@ class @LSC.Chart
 		for i in @instances when i.name == instanceName
 			return i
 		return null
+	# Gets the first instance with the given name in any other chart
+	# Note: Used to ensure the player type when changing instance name
+	getInstanceByNameInAllCharts: (instanceName) =>
+		for chart in Charts when chart.name != @name
+			for inst in chart.instances when inst.name == instanceName
+				return inst
 	# changes the type of selected instance
 	changeInstanceType: =>
-		for i in @instances when i.selected
-			i.env = !i.env
+		selectedInstance = null
+		for inst in @instances when inst.selected
+			inst.env = !inst.env
+			selectedInstance = inst
+
+		# should not happen!
+		if !selectedInstance?
+			log "No instance was selected! Something went wrong."
+
+		# change instance type in all charts in system
+		updatedCharts = []
+		for chart in Charts when chart.name != @name
+			for inst in chart.instances when inst.name == selectedInstance.name
+				inst.env = selectedInstance.env
+				updatedCharts.push(chart.name)
+		if updatedCharts.length > 0
+			alert "'#{selectedInstance.name}' was also updated in:\n #{updatedCharts.join('\n ')}"
 		@update()
 	# toggle enabledness of the chart
 	toggleEnabledness: =>

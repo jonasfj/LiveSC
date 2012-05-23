@@ -86,6 +86,7 @@ class @LSC.Instance
 			
 			# Check if the name conflicts with another instance
 			inst = @lsc.getInstanceByName(val)
+
 			if inst? and inst.number != @number
 				@editor.val(@name)
 				@editor.css("background","yellow").focus()
@@ -97,6 +98,13 @@ class @LSC.Instance
 			@editor.remove()
 			@editor = null
 			@lsc.change()
+
+			# Ensure that instance conforms to the already specified player
+			player = @lsc.getInstanceByNameInAllCharts(val)
+			if player?
+				@env = player.env
+				@lsc.update()
+			
 	hoverIn: =>
 		unless @selected
 			@head.update

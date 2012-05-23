@@ -38,8 +38,25 @@ svg{
 	user-select: none;
 }
 
+#toolbar span.filename{
+	font:				"Verdana";
+	font-weight:		bold;
+	padding:			10px 10px 0 0;
+	float:				left;
+	margin:				0 0 0 10px;
+	display:			block;
+}
+
 #toolbar{
-	height:			40px;
+	height:				40px;
+	background-color:	#999;
+	width:				100%;
+}
+
+#toolbar div.toolbaritem{
+	float: left;
+	height:				40px;
+	width:				40px;
 }
 
 #wrapper{
@@ -84,10 +101,10 @@ div.wrapright{
 
 
 #chartlist .item:hover{
-	background:		#e6e6e6;
-	-moz-box-shadow: 0 0 3px rgba(0,0,0,0.5);
+	background:			#e6e6e6;
+	-moz-box-shadow: 	0 0 3px rgba(0,0,0,0.5);
 	-webkit-box-shadow: 0 0 3px rgba(0,0,0,0.5);
-	box-shadow: 0 0 3px rgba(0,0,0,0.5);
+	box-shadow: 		0 0 3px rgba(0,0,0,0.5);
 }
 
 #effectarea{
@@ -100,7 +117,7 @@ div.wrapright{
 	display:		none;
 }
 
-#apploading{
+.dialog{
 	display:			none;
 	position:			absolute;
 	z-index:			99999999;
@@ -108,17 +125,41 @@ div.wrapright{
 	height:				100%;
 	top:				0px;
 	left:				0px;
-	background-color:	white;
+	background-color:	rgba(0, 0, 0, 0.5);
+	text-align:			center;
 }
 
-#apploadmsg{
+.msgbox{
 	padding:			10px;
 	border:				10px solid black;
-	width:				34%;
-	margin-left:		33%;
-	margin-right:		33%;
+	width:				50%;
+	margin-left:		25%;
+	margin-right:		25%;
 	margin-top:			10%;
+	background-color:	white;
+	position:			relative;
 }
+
+#closeprogress {
+	position: 		absolute;
+	display:		none;
+	cursor: 		pointer;
+	color:			red;
+	right: 			10px;
+	bottom: 		10px;
+}
+
+#console{
+	overflow:			auto;
+	border:  			1px solid #ccc;
+	display:			block;
+	margin-left:		30px;
+	margin-right:		30px;
+	font-size:			1.2em;
+	text-align:			left;
+	margin-bottom:		30px;
+}
+
 
 #examples{
 	display:			none;
@@ -158,10 +199,10 @@ div.wrapright{
 	background:		#f6f6f6;
 }
 #examples div.example:hover{
-	background:		#e6e6e6;
-	-moz-box-shadow: 0 0 3px rgba(0,0,0,0.5);
+	background:			#e6e6e6;
+	-moz-box-shadow: 	0 0 3px rgba(0,0,0,0.5);
 	-webkit-box-shadow: 0 0 3px rgba(0,0,0,0.5);
-	box-shadow: 0 0 3px rgba(0,0,0,0.5);
+	box-shadow: 		0 0 3px rgba(0,0,0,0.5);
 }
 
 #examples div.topdiv:hover{
@@ -181,3 +222,4 @@ div.wrapright{
 	color:				red;
 	cursor:				pointer;
 }
+

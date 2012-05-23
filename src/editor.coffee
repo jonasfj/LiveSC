@@ -37,12 +37,18 @@
 			opacity:		0.8
 	regex:
 		namepattern:		/[A-z]+\w*/g; # Used to sanitize names
+	app:
+		name:				"LiveSC"
 
 # Automatically computed contants
 @cfg.instance.width = @cfg.instance.head.width + @cfg.instance.padding * 2
 
 # LSC namespace if not already there
 @LSC ?= {}
+
+# Set page title
+@setDocTitle = (title) =>
+	document.title = "#{cfg.app.name}: " + title
 
 # Current Chart
 @CurrentChart = null
@@ -75,24 +81,17 @@ instant = false
 		$("#workspace").height($(window).height() - cfg.toolbar.height)
 		$("#chartlist").height($(window).height() - cfg.toolbar.height)
 	$(window).resize()
+
+	#### Set default document title
+	setDocTitle("Untitled")
 	
-	# Create workspace paper
+	#### Create workspace paper
 	@paper = @Raphael("workspace", cfg.chart.minwidth, "400")
 	@Raphael.el.update = (params) ->
 		if instant
 			@attr params
 		else
 			@animate params, cfg.animation.speed
-	@Raphael.el.moveTo = (x, y) ->
-			if @type == "path"
-				#Translate position iteratively :(
-				@translate(x - @getBBox().x, y - @getBBox().y)
-				@translate(x - @getBBox().x, y - @getBBox().y)
-				@translate(x - @getBBox().x, y - @getBBox().y)
-				@translate(x - @getBBox().x, y - @getBBox().y)
-				@translate(x - @getBBox().x, y - @getBBox().y)
-			else
-				return this.attr({x: x, y: y});
 	
 	#### Hide text-cursor when dragging in chrome
 	# See: http://forum.jquery.com/topic/chrome-text-select-cursor-on-drag
@@ -124,19 +123,19 @@ instant = false
 	@sidebar = new @LSC.Sidebar($("#chartlist"))
 
 	#### Initialize toolbar
-	@toolbar = new @LSC.Toolbar(@Raphael("toolbar", "100%", cfg.toolbar.height))
-	new @LSC.Button("AddChart", "Add chart", toolbar).click 			-> addChart()
-	new @LSC.Button("plus", "Add controller instance", toolbar).click 	-> CurrentChart?.createInstance(false)
-	new @LSC.Button("SwitchType", "Switch instance type (env/sys)", toolbar).click -> CurrentChart?.changeInstanceType()
-	new @LSC.Button("exchange", "Add message", toolbar).click 			-> CurrentChart?.addMessage()
-	new @LSC.Button("cross", "Toggle enabledness of mainchart", toolbar).click			-> CurrentChart?.toggleEnabledness()
-	new @LSC.Button("trash", "Delete selection", toolbar).click 		-> CurrentChart?.deleteSelection()
-	new @LSC.Button("cloudDown", "Download project", toolbar).click		download
-	new @LSC.Button("picture", "Export Chart as SVG", toolbar).click	exportSVG
-	new @LSC.Button("download", "Export SMV code", toolbar).click		getSMV
-	new @LSC.Button("arrowright", "Check realizability", toolbar).click	check
-	new @LSC.Button("magic", "Synthesis a strategy", toolbar).click		synthesize
-	new @LSC.Button("star3off", "Load example", toolbar).click			examples
+	@toolbar = new @LSC.Toolbar("#toolbar")
+	new @LSC.Button("AddChart", 	"Add chart", 				"#toolbar").click -> addChart()
+	new @LSC.Button("plus", 		"Add controller instance",	"#toolbar").click -> CurrentChart?.createInstance(false)
+	new @LSC.Button("SwitchType", 	"Toggle instance type",		"#toolbar").click -> CurrentChart?.changeInstanceType()
+	new @LSC.Button("exchange", 	"Add message", 				"#toolbar").click -> CurrentChart?.addMessage()
+	new @LSC.Button("cross", 		"Toggle FALSE mainchart", 	"#toolbar").click -> CurrentChart?.toggleEnabledness()
+	new @LSC.Button("trash", 		"Delete selection", 		"#toolbar").click -> CurrentChart?.deleteSelection()
+	new @LSC.Button("cloudDown", 	"Download project", 		"#toolbar").click download
+	new @LSC.Button("picture", 		"Export Chart as SVG", 		"#toolbar").click exportSVG
+	new @LSC.Button("download", 	"Export SMV code", 			"#toolbar").click getSMV
+	new @LSC.Button("arrowright", 	"Check realizability", 		"#toolbar").click check
+	new @LSC.Button("magic", 		"Synthesize a strategy", 	"#toolbar").click synthesize
+	new @LSC.Button("star3off", 	"Load example", 			"#toolbar").click examples
 
 	# Add new empty chart
 	addChart()
@@ -148,10 +147,11 @@ $ LSC.initialize
 addChart = (json = @LSC.Chart.emptyJSON, switchto = true) =>
 	@Charts.push(json)
 	index = @Charts.length - 1
-	@sidebar.addEntry(index, json.name, switchChart)
+	@sidebar.addEntry(index, json.name, switchChart, removeChart)
 	if switchto
 		switchChart(index)
 
+# Switches the current chart
 switchChart = (index) =>
 	if @Charts[index]?
 		# Save old chart if exists
@@ -163,6 +163,16 @@ switchChart = (index) =>
 		@CurrentChart.fromJSON(@Charts[index])
 		@CurrentIndex = index
 		@CurrentChart.change chartChanged
+
+# removes the selected chart
+removeChart = (index) =>
+	if @Charts[index]?
+		@CurrentChart = null
+		@Charts.splice(index,1)
+		if index > 0
+			switchChart(index-1)
+		else if index == 0
+			addChart()
 
 chartChanged = =>
 	if @CurrentChart?
@@ -229,6 +239,7 @@ dragEffectRemove = ->
 			dragEffect = dragIcon = dragLeftTimeout = null
 			dragEffectLeaving = false
 
+# Drag file onto document
 dragFileOver = (event) ->
 	return unless hasFile(event)
 	dragEffectAdd()		# Ensure drag effect
@@ -236,6 +247,7 @@ dragFileOver = (event) ->
 	event.preventDefault()
 	event.dataTransfer.dropEffect = 'copy'
 
+# Drop file onto document
 dropFile = (event) =>
 	return unless hasFile(event)
 	dragEffectLeave()	# Remove drag effect
@@ -253,12 +265,14 @@ dropFile = (event) =>
 		for item in data.charts
 			addChart(item, false)
 		@toolbar.setTitle(data.title)
+		setDocTitle(data.title)
 		if @Charts.length == 0
 			addChart()
 		else
 			switchChart(0)
 	reader.readAsText(file)
-	
+
+# Downloads the SMV code for the specification
 getSMV = =>
 	if @CurrentChart?
 		@Charts[@CurrentIndex] = @CurrentChart.toJSON()
@@ -271,6 +285,7 @@ getSMV = =>
 	informDownload()
 	window.open(dataurl, "_blank")
 
+# Checks realizability
 check = =>
 	if @CurrentChart?
 		@Charts[@CurrentIndex] = @CurrentChart.toJSON()
@@ -281,6 +296,7 @@ check = =>
 		return
 	LSC.Applet.check(smv)
 
+# Synthesizes a controller
 synthesize = =>
 	if @CurrentChart?
 		@Charts[@CurrentIndex] = @CurrentChart.toJSON()
@@ -291,6 +307,7 @@ synthesize = =>
 		return
 	LSC.Applet.synthesize(smv)
 
+# Export current chart to SVG file
 exportSVG = =>
 	if @CurrentChart?
 		@CurrentChart.clearSelection()
@@ -301,8 +318,10 @@ exportSVG = =>
 
 informDownload = ->
 	if navigator.userAgent.indexOf("Chrome/19") >= 0
-		alert "Your're running Chrome 19.\nThis browser has problems with data-urls,\nsee issue #97108 (chromium), a fix is due in Chrome 20."
+		alert "You are running Chrome 19.\nThis browser has problems with data-urls,\nsee issue #97108 (chromium), a fix is due in Chrome 20."
 
+# Displays available example systems
+# Callback loads the selected example
 examples = ->
 	LSC.loadExample (json) ->
 		@CurrentChart = null
@@ -313,6 +332,7 @@ examples = ->
 		for item in json.charts
 			addChart(item, false)
 		@toolbar.setTitle(json.title)
+		setDocTitle(json.title)
 		if @Charts.length == 0
 			addChart()
 		else

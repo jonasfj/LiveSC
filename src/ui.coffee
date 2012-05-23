@@ -2,49 +2,26 @@
 @LSC ?= {}
 
 class @LSC.Toolbar
-	constructor: (@paper) ->
-		#draw background
-		@bg = @paper.rect(0, 0, "100%", cfg.toolbar.height)
-		@bg.attr
-			fill:"#aaa"
-			"stroke":"none"
-		@paper.rect(0, cfg.toolbar.height, "100%", 1).attr({stroke: "none", fill: "#999"})
-		#filename
-		@title = @paper.text(cfg.margin, cfg.toolbar.height / 2, "Untitled.lsc")
-		.attr({"text-anchor":"start",font:"Verdana","font-weight":"bold"})
-		@buttons = []
-		@title.click(@edit)
-		@title.hover(@hoverIn, @hoverOut)
-	update: =>
-		pad = (cfg.toolbar.height - cfg.icon.height) / 2
-		x = y = pad
-		x += @title.getBBox().width + pad
-		for icon in @buttons
-			icon.update(x, y)
-			x += icon.rect.getBBox().width + 2 * pad
-	addButton: (button) =>
-		@buttons.push(button)
-		pad = (cfg.toolbar.height - cfg.icon.height) / 2
-		y = pad
-		x = cfg.margin + @title.getBBox().width + cfg.margin
-		x += (cfg.icon.height + 2 * pad) * (@buttons.length - 1)
-		button.update(x, y)
-
+	constructor: (container) ->
+		@span = $("<span>Untitled</span>")
+		@span.addClass("filename")
+		@span.appendTo(container)
+		@span.click(@edit)
+		@span.hover(@hoverIn, @hoverOut)
 	edit: (event) =>				#Edit name
 			unless @editor?
 				@editor = $("<input type='text'/>")
 				@editor.css
 					left:			cfg.margin
 					top:			cfg.margin+2
-					width:			@title.getBBox().width
+					width:			@span.width()
 					background:		"#ccc"
 					height:			12
 				@editor.addClass("editor centered")
 				$("body").append(@editor)
-				text = @title.attr("text")
-				@title.attr
-					text: ""
-					opacity: 0
+				text = @span.html()
+				@span.css 
+					visibility: "hidden"
 				@editor.val(text).focus().select().blur(@unedit).keypress (event) =>
 					@unedit() if event.keyCode == 13
 
@@ -52,26 +29,24 @@ class @LSC.Toolbar
 		if @editor?
 			name = @editor.val()
 			return if name == ""
-			@title.attr
-				text: name
-				opacity: 1
+			@span.html(name)
+			setDocTitle(name)
+			@span.css
+				visibility:"visible"
 			@editor.remove()
 			@editor = null
-		@update()
 	hoverIn: =>
-		@title.attr
+		@span.css
 			cursor: "text"
-			opacity: 0.5
+			opacity: .50
 	hoverOut: =>
-		@title.attr
+		@span.css
 			cursor: "arrow"
-			opacity: 1
+			opacity: 1.0
 	setTitle: (title) =>
-		@title.attr
-			text: title
-		@update()
+		@span.html(title)
 	getTitle: =>
-		return @title.attr "text"
+		return @span.html()
 
 class @LSC.Button
 	constructor: (icon, @tooltip, @toolbar) ->
@@ -79,28 +54,29 @@ class @LSC.Button
 			p = Icons[icon]
 		else
 			p = LSC.Icons[icon]
-		@icon = @toolbar.paper.path(p)
+		div = $("<div></div>")
+		div.addClass("toolbaritem")
+		div.appendTo(@toolbar)
+		@paper = Raphael(div[0], 40, 40)
+		@icon = @paper.path(p)
 		@icon.attr
 			fill:	"#777"
 			stroke:	"#fff"
 			"stroke-opacity": 0
-		sf = cfg.icon.height / @icon.getBBox().height
-		@icon.scale(sf, sf, 0, 0)
-		@rect = @toolbar.paper.rect(0, 0, @icon.getBBox().width, cfg.icon.height)
+		#sf = cfg.icon.height / @icon.getBBox().height
+		#@icon.scale(sf, sf, 0, 0)
+		@icon.translate(4,4)
+		@rect = @paper.rect(0, 0, 40, 40)
 		@rect.attr
 			fill:		"#fff"
 			opacity:	0
 			title: @tooltip
 			cursor: "pointer"
 		@rect.hover(@hoverIn, @hoverOut)
-		@toolbar.addButton(@)
-	update: (x,y) ->
-		@icon.moveTo x, y
-		@rect.moveTo x, y
 	hoverIn: =>
 		@icon.stop().animate
 				fill: "#333"
-				"stroke-opacity": 0	#1
+				"stroke-opacity": 0
 			, 100
 	hoverOut: =>
 		@icon.stop().animate

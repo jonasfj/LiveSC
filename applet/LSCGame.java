@@ -18,20 +18,25 @@ public class LSCGame{
 
 	/** Target configurations */
 	BDD q;
+	
+	/** Progress reporter */
+	ProgressReporter reporter;
 
 	/** Construct LSC Game from SMV model
 	 * @remarks: This invalidates other instances of LSCGame, yes, poor pattern but it works.
 	 */
-	public LSCGame(String model) throws SpecException, IOException{
-		// Reset the environment, invalidating all the instances of LSCGame
-		Env.resetEnv();
+	public LSCGame(ProgressReporter reporter) throws SpecException{
+		this.reporter = reporter;
 		
-		// Load Transition System
-		Env.loadSMVModuleFromString(model);
-
+		if(reporter != null)
+			reporter.report("Loading sub-modules...\\n");
+		
 		// Get Modules
 		env = Env.getModule("main.env");
 		sys = Env.getModule("main.sys");
+
+		if(reporter != null)
+			reporter.report("Loading target configurations...\\n");
 
 		// Get target configurations
 		q = Env.loadSpecString("SPEC env.gbuchi = 0")[0].toBDD();
@@ -40,11 +45,15 @@ public class LSCGame{
 	/** Check if this game is realizable */
 	public boolean realizable(){
 		if(win == null) computeWinningStates();
+		if(reporter != null)
+			reporter.report("Testing for realizability...\\n");
 		return env.initial().and(sys.initial()).and(win.not()).isZero();
 	}
 
 	/** Find Winning States, results cached in win */
 	private void computeWinningStates(){
+		if(reporter != null)
+			reporter.report("Computing Winning Stategy");
 		BDD z = Env.TRUE();
 		FixPoint<BDD> Fz = new FixPoint<BDD>();
 		while(Fz.advance(z)){
@@ -55,8 +64,12 @@ public class LSCGame{
 				y = cpred(y).or(qcpredz);
 			}
 			z = y;
+			if(reporter != null)
+				reporter.report(".");
 		}
 		win = z;
+		if(reporter != null)
+			reporter.report("\n");
 	}
 
 	/** Controllable Predecessors */
@@ -73,6 +86,9 @@ public class LSCGame{
 		if(win == null)
 			computeWinningStates();
 
+		if(reporter != null)
+			reporter.report("Computing transistion from winning target configrations...\\n");
+
 		// Compute commonly used expressions
 		BDD qwin = q.and(win);
 		BDD rXY = env.trans().and(sys.trans());
@@ -80,6 +96,9 @@ public class LSCGame{
 		// Initial step on the transtion system (the target transition)
 		// Transition says: 		win & q -> win
 		BDD trans = qwin.and(rXY).and(Env.prime(win));
+
+		if(reporter != null)
+			reporter.report("Computing loading to target");
 
 		BDD y = Env.FALSE();
 		FixPoint<BDD> Fy = new FixPoint<BDD>();
@@ -90,8 +109,12 @@ public class LSCGame{
 			BDD next_rule = next_y.and(y.not()).and(rXY).and(Env.prime(y));
 			trans = trans.or(next_rule);
 			y = next_y;
+			if(reporter != null)
+				reporter.report(".");
 		}
-		return "The transition system of the strategy has " + trans.nodeCount()  + " nodes";
+		if(reporter != null)
+			reporter.report("\\nStrategy computed, the BDD for the transistion system has " + trans.nodeCount() + " nodes");
+		return "" + trans.nodeCount();
 	}
 }
 
