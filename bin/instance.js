@@ -71,7 +71,11 @@
       pad = cfg.instance.padding;
       if (this.env) {
         this.head.attr({
-          "stroke-dasharray": "."
+          "stroke-dasharray": "--"
+        });
+      } else {
+        this.head.attr({
+          "stroke-dasharray": ""
         });
       }
       this.head.update({
@@ -138,25 +142,34 @@
     };
 
     Instance.prototype.unedit = function(event) {
-      var inst;
+      var inst, player, val;
       if (this.editor != null) {
         if (this.editor.val() === "") {
           return;
         }
-        inst = this.lsc.getInstanceByName(this.editor.val().trim());
+        if (!cfg.regex.namepattern.test(this.editor.val())) {
+          return;
+        }
+        val = this.editor.val().trim().match(cfg.regex.namepattern).join('');
+        inst = this.lsc.getInstanceByName(val);
         if ((inst != null) && inst.number !== this.number) {
           this.editor.val(this.name);
           this.editor.css("background", "yellow").focus();
           return;
         }
-        this.name = this.editor.val().trim();
+        this.name = val;
         this.text.attr({
           text: this.name,
           opacity: 1
         });
         this.editor.remove();
         this.editor = null;
-        return this.lsc.change();
+        this.lsc.change();
+        player = this.lsc.getInstanceByNameInAllCharts(val);
+        if (player != null) {
+          this.env = player.env;
+          return this.lsc.update();
+        }
       }
     };
 
@@ -200,7 +213,7 @@
 
     Instance.prototype.toJSON = function() {
       return {
-        name: LSC.escapeName(this.name),
+        name: this.name,
         number: this.number,
         env: this.env
       };

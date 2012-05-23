@@ -19,19 +19,48 @@
 
     }
 
-    Sidebar.prototype.addEntry = function(index, name, cb) {
-      this.entry = $("<div class='item'>" + name + "</div>");
+    Sidebar.prototype.addEntry = function(index, name, switcher, remover) {
+      this.entry = $("<div class='item'><span>" + name + "</span></div>");
+      this.remover = $("<span>x</span>");
+      this.remover.css({
+        float: "right",
+        opacity: .25,
+        width: "20px",
+        "text-align": "center"
+      });
+      this.remover.hover(function() {
+        return $(this).css({
+          opacity: 1.0,
+          "border-radius": "20%",
+          background: "#fff"
+        });
+      }, function() {
+        return $(this).css({
+          "border-radius": "0",
+          background: "none",
+          opacity: .25
+        });
+      });
+      this.remover.appendTo(this.entry);
       this.entry.appendTo(this.parent);
       this.entry.data("index", index);
-      return this.entry.click(function() {
-        return typeof cb === "function" ? cb(index) : void 0;
+      this.entry.click(function() {
+        return typeof switcher === "function" ? switcher(index) : void 0;
+      });
+      return this.remover.click(function() {
+        if (confirm("You are about to delete a chart, proceed?")) {
+          if (typeof remover === "function") {
+            remover(index);
+          }
+          return $(this).parent().remove();
+        }
       });
     };
 
     Sidebar.prototype.updateEntry = function(index, name) {
       return this.parent.children().each(function() {
         if ($(this).data("index") === index) {
-          return $(this).html(name);
+          return $(this).children("span:first").html(name);
         }
       });
     };

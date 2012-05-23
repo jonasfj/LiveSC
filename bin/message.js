@@ -191,11 +191,16 @@
     };
 
     Message.prototype.unedit = function(event) {
+      var val;
       if (this.editor != null) {
         if (this.editor.val() === "") {
           return;
         }
-        this.name = this.editor.val();
+        if (!cfg.regex.namepattern.test(this.editor.val())) {
+          return;
+        }
+        val = this.editor.val().trim().match(cfg.regex.namepattern).join('');
+        this.name = val;
         this.text.attr({
           text: this.name,
           opacity: 1
@@ -207,10 +212,10 @@
 
     Message.prototype.toJSON = function() {
       return {
-        name: LSC.escapeName(this.name),
+        name: this.name,
         location: this.location,
-        source: LSC.escapeName(this.source.name),
-        target: LSC.escapeName(this.target.name)
+        source: this.source.name,
+        target: this.target.name
       };
     };
 
