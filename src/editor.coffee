@@ -262,7 +262,7 @@ instant = false
 					LiveSC is opened. Just click anywhere to make them go away.
 					But not yet, please finish reading this list first, the best is saved for last.
 					"""
-		action:		 -> $("#welcomedialog").fadeIn cfg.animation.speed
+		action:		 -> $("#helpdialog").fadeIn cfg.animation.speed
 
 	@LSC.Button
 		icon:		"star3"
@@ -278,9 +278,10 @@ instant = false
 	addChart()
 
 	# Hide welcome dialog on click
-	$("#welcomedialog").click ->
-		$("#welcomedialog").fadeOut cfg.animation.speed, ->
-			$("#welcometitle").html("Helpful Instructions")
+	$("#welcomedialog").click -> $("#welcomedialog").fadeOut cfg.animation.speed
+	$("#helpdialog").click -> $("#helpdialog").fadeOut cfg.animation.speed
+	$("#examplehint").click examples
+	$("#helphint").click -> $("#helpdialog").fadeIn cfg.animation.speed
 
 # Initialize editor
 $ LSC.initialize

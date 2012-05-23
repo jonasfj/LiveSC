@@ -90,6 +90,7 @@ div.wrapright{
 #chartlist .item{
 	padding:		5px;
 	cursor:			pointer;
+	margin-bottom:	2px;
 }
 
 #chartlist .item:nth-child(odd){
@@ -235,10 +236,8 @@ div.wrapright{
 }
 
 
-
-
-
-#welcomedialog{
+#helpdialog{
+	display:			none;
 	position:			absolute;
 	z-index:			99999999;
 	width:				100%;
@@ -249,17 +248,17 @@ div.wrapright{
 	overflow:			auto;
 }
 
-#welcome{
+#help{
 	width:				100%;
 	height:				100%;
 	overflow:			auto;
 }
 
-#welcome h1, #welcome p{
+#help h1, #help p{
 	padding-left: 	15px;
 }
 
-#welcome div.infoitem{
+#help div.infoitem{
 	width:			50%;
 	float:			left;
 	height:			70px;
@@ -267,7 +266,7 @@ div.wrapright{
 	padding-top:	10px;
 }
 
-#welcome div.infoitem div.infoicon{
+#help div.infoitem div.infoicon{
 	height:			70px;
 	width:			80px;
 	float:			left;
@@ -287,26 +286,48 @@ div.wrapright{
 	max-height:	320px;
 }
 
-#welcome div.infoitem div.infotext{
+#help div.infoitem div.infotext{
 	padding-right:		10px;
 }
 
-#welcome div.infoitem:nth-child(4n+2), #welcome div.infoitem:nth-child(4n+1){
+#help div.infoitem:nth-child(4n+2), #help div.infoitem:nth-child(4n+1){
 	background:		#f6f6f6;
 }
-#welcome div.infoitem:nth-child(4n+0), #welcome div.infoitem:nth-child(4n+3){
+#help div.infoitem:nth-child(4n+0), #help div.infoitem:nth-child(4n+3){
 	background:		#fff;
 }
-#welcome div.infoitem:nth-child(5){
+#help div.infoitem:nth-child(5){
 	background:		#fff;
 }
-#welcome div.infoitem:nth-child(4){
+#help div.infoitem:nth-child(4){
 	background:		#f6f6f6;
 }
-#welcomeclose{
+#helpclose{
 	cursor:		pointer;
 	color: 		red;
 	position: 	absolute;
 	top: 		10px;
 	right: 		20px;
+}
+
+.hint img{
+	width: 80px;
+	vertical-align: middle;
+}
+
+.hint{
+	cursor:			pointer;
+	font-size:		2em;
+	text-align:		left;
+	padding-left:	100px;
+	background:		#fff;
+	padding-top:	5px;
+	padding-bottom:	5px;
+	margin-bottom:	3px;
+}
+.hint:hover{
+	background:			#e6e6e6;
+	-moz-box-shadow: 	0 0 3px rgba(0,0,0,0.5);
+	-webkit-box-shadow: 0 0 3px rgba(0,0,0,0.5);
+	box-shadow: 		0 0 3px rgba(0,0,0,0.5);
 }

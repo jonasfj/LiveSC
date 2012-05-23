@@ -63,10 +63,9 @@ When we feel like it:
 	</div>
 	<div id="examples">
 	</div>
-	<div id="welcomedialog">
-		<div id="welcome">
-			<h1 id="welcometitle">Welcome to LiveSC 1.0.0</h1>
-			<div id="welcomeclose">(Click to skip instructions)</div>
+	<div id="welcomedialog" class="dialog" style="display: block;">
+		<div id="welcome" class="msgbox">
+			<h1>Welcome to LiveSC 1.0</h1>
 			<p>
 			LiveSC is a web application for drawing and checking realizability of live sequence chart
 			specifications.
@@ -74,6 +73,23 @@ When we feel like it:
 			<a href="https://github.com/jopsen/LiveSC" target="_blank">github project</a>, where you'll also find
 			links to our paper on the subject, which formally presents the subset of live sequence charts 
 			consider here.
+			</p>
+			<h2>Quick Start</h2>
+			<div id="examplehint" class="hint">
+				<img src="images/star.svg"/>
+				Example Gallery
+			</div>
+			<div id="helphint" class="hint">
+				<img src="images/help.svg"/>
+				Helpful Instructions
+			</div>
+		</div>
+	</div>
+	<div id="helpdialog">
+		<div id="help">
+			<h1>Helpful Instructions</h1>
+			<div id="helpclose">(Click to skip instructions)</div>
+			<p>
 			Below you'll find a brief introduction this application.
 			</p>
 			<div id="infolist">
