@@ -1,0 +1,2 @@
+#!/bin/sh
+java -cp LSCSMVChecker.jar:jtlv.jar:libs/javabdd-2.0.jar:libs/antlr-runtime-3.0.1.jar:libs/jdd.jar LSCSMVChecker $*
