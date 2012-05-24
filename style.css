@@ -214,6 +214,7 @@ div.wrapright{
 #examples div.topdiv{
 	cursor:				default;
 	padding-top:		10px;
+	padding-bottom:		10px;
 	position:			fixed;
 	z-index:			99999;
 	left:				0px;

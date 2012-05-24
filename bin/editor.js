@@ -120,7 +120,7 @@
     $(window).resize(function() {
       $("#workspace").height($(window).height() - cfg.toolbar.height);
       $("#chartlist").height($(window).height() - cfg.toolbar.height);
-      return $("#examples").height($(window).height() - 60);
+      return $("#examples").height($(window).height() - 70);
     });
     $(window).resize();
     setDocTitle("Untitled");
