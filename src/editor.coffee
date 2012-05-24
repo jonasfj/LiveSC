@@ -81,6 +81,7 @@ instant = false
 	$(window).resize ->
 		$("#workspace").height($(window).height() - cfg.toolbar.height)
 		$("#chartlist").height($(window).height() - cfg.toolbar.height)
+		$("#examples").height($(window).height() - 60)
 	$(window).resize()
 
 	#### Set default document title
