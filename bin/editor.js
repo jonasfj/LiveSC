@@ -55,7 +55,8 @@
       namepattern: /[A-z]+\w*/g
     },
     app: {
-      name: "LiveSC"
+      name: "LiveSC",
+      version: "1.0"
     }
   };
 
@@ -118,10 +119,12 @@
   this.LSC.initialize = function() {
     $(window).resize(function() {
       $("#workspace").height($(window).height() - cfg.toolbar.height);
-      return $("#chartlist").height($(window).height() - cfg.toolbar.height);
+      $("#chartlist").height($(window).height() - cfg.toolbar.height);
+      return $("#examples").height($(window).height() - 60);
     });
     $(window).resize();
     setDocTitle("Untitled");
+    $("#welcometitle").html("Welcome to " + cfg.app.name + " " + cfg.app.version);
     _this.paper = _this.Raphael("workspace", cfg.chart.minwidth, "400");
     _this.Raphael.el.update = function(params) {
       if (instant) {
@@ -155,7 +158,7 @@
     _this.LSC.Button({
       icon: "AddChart",
       tooltip: "Add chart to specification",
-      help: "Adds a <b>new chart</b> to the current specification project.\nNotice that all chart in the project\nmust be satisfied by any realization. Typically charts are used to express independent\nsenarios or counter examples.",
+      help: "Adds a <b>new chart</b> to the current specification project.\nNotice that all chart in the project\nmust be satisfied by any realization. Typically charts are used to express independent\nsenarios or counter-examples.",
       action: function() {
         return addChart();
       }
@@ -163,7 +166,7 @@
     _this.LSC.Button({
       icon: "plus",
       tooltip: "Add system instance",
-      help: "Adds a system <b>instance to the current chart</b>. You can change the instance type from\nsystem to environment type later. Remember that instance names are unique within\na given chart. Instance type must also match type of the same instance in other\ncharts.",
+      help: "Adds a <i>system</i> <b>instance to the current chart</b>. You can change the instance type from\n<i>system</i> (solid border) to <i>environment</i> (dashed border) type later. Instance names must be unique within\na given chart. The type of a given instance must also be the same in the other\ncharts.",
       action: function() {
         return typeof CurrentChart !== "undefined" && CurrentChart !== null ? CurrentChart.createInstance(false) : void 0;
       }
@@ -171,7 +174,7 @@
     _this.LSC.Button({
       icon: "SwitchType",
       tooltip: "Toggle instance type (sys/env)",
-      help: "Toggle instance type, ie. convert <b>system instance to environment instances</b>\nand vice versus.\nNotice that the type of instances with same name in other charts will also change.",
+      help: "Toggle instance type, ie. convert <b><i>system</i> instance to <i>environment</i> instances</b>\nand vice versus.\nNotice that the type of instances with same name in other charts will also change.",
       action: function() {
         return typeof CurrentChart !== "undefined" && CurrentChart !== null ? CurrentChart.changeInstanceType() : void 0;
       }
@@ -179,7 +182,7 @@
     _this.LSC.Button({
       icon: "exchange",
       tooltip: "Add message",
-      help: "Add a <b>message exchange</b> to the current chart. Two messages are equal to if they have the\nsame name and go from the same sender to the same receiver.\nMessages in the forbidden section, will abort the prefix and are not allowed to occur\nin an execution of the main chart.",
+      help: "Add a <b>message exchange</b> to the current chart. Two messages are equal to one another if they have the\nsame name and go from the same sender to the same receiver.\nMessages in the forbidden section will abort the prefix and are not allowed to occur\nin any execution of the main chart.",
       action: function() {
         return typeof CurrentChart !== "undefined" && CurrentChart !== null ? CurrentChart.addMessage() : void 0;
       }
@@ -187,7 +190,7 @@
     _this.LSC.Button({
       icon: "cross",
       tooltip: "Toggle FALSE main chart",
-      help: "Toggle <b>false main chart</b>, meaning that we consider the main chart impossible to satisfy.\nThis is equivalent to requiring that the prechart is never completed.\nNote, any messages in the main chart will be ignored and are of no importance here.",
+      help: "Toggling <b>false main chart</b> causes the main chart to be impossible to satisfy.\nThis is equivalent to requiring that the prechart is never completed.\nNote, any messages in the main chart will be ignored and are of no importance here.",
       action: function() {
         return typeof CurrentChart !== "undefined" && CurrentChart !== null ? CurrentChart.toggleEnabledness() : void 0;
       }
@@ -195,7 +198,7 @@
     _this.LSC.Button({
       icon: "trash",
       tooltip: "Delete selection",
-      help: "<b>Deletes</b> the current select, be it a message or and instance.\nNote that if you delete and instance the associated messages will also be removed.",
+      help: "<b>Deletes</b> the current selected message or instance.\nNote that if you delete an instance the associated messages will also be removed.",
       action: function() {
         return typeof CurrentChart !== "undefined" && CurrentChart !== null ? CurrentChart.deleteSelection() : void 0;
       }
@@ -204,32 +207,32 @@
     _this.LSC.Button({
       icon: "cloudDown",
       tooltip: "Download project as JSON file",
-      help: "Export <b>project as JSON</b>. The file can be saved to disk and drag 'n' dropped back\ninto this editor at any time. Thus, enabling you to save your projects.",
+      help: "Export <b>project as JSON</b>. The file can be saved to disk and drag-and-dropped back\ninto this editor at any time. Thus, enabling you to save your projects.",
       action: download
     });
     _this.LSC.Button({
       icon: "picture",
       tooltip: "Export Chart as SVG",
-      help: "Export current <b>chart as SVG</b>. With the ability to open, edit and export these files from\n<a href='http://inkscape.org/'>Inkscape</a> this is quick way to generate high quality\nlive sequence charts with annotations.",
+      help: "Export current <b>chart as SVG</b>. With the ability to open, edit and export these files from\n<a href='http://inkscape.org/'>Inkscape</a>. This is a quick way to generate high quality\nlive sequence charts with annotations.",
       action: exportSVG
     });
     _this.LSC.Button({
       icon: "download",
       tooltip: "Export SMV code",
-      help: "Export the <b>transistion system</b> of 'repeated reachability' game this project was\ntranslated to. You can use this to check realizability and synthesize a strategy\nusing a commandline version of our engine downloadable from \n<a href='https://github.com/jopsen/LiveSC' target='_blank'>github</a>.",
+      help: "Export the <b>transistion system</b> for the 'repeated reachability' game this project was\ntranslated into. You can use this to check realizability and synthesize a strategy\nusing a command line version of our engine, which can be downloaded from \n<a href='https://github.com/jopsen/LiveSC' target='_blank'>github</a>.",
       action: getSMV
     });
     _this.LSC.Separator();
     _this.LSC.Button({
       icon: "arrowright",
       tooltip: "Check realizability",
-      help: "<b>Check realizability</b> of the current specification project.\nThis will lazy load a Java applet and for large projects this will not finish\nany time soon. Consider saving your project before trying this feature.",
+      help: "<b>Check realizability</b> of the current specification project.\nThis will load a Java applet and for large projects this will probably not finish\nany time soon. Consider saving your project before trying this feature.",
       action: check
     });
     _this.LSC.Button({
       icon: "magic",
       tooltip: "Synthesize a strategy",
-      help: "Check realizability and <b>synthesize a strategy</b> for the system, if the current\nspecification project is realizable. At the moment we only inform you about\nthe size of the BDD for representation of the transision system.",
+      help: "Check realizability and <b>synthesize a strategy</b> for the system, if the current\nspecification project is realizable. At the moment we only inform you about\nthe size of the BDD representation of the transision system.",
       action: synthesize
     });
     _this.LSC.FloatRight();
@@ -252,7 +255,7 @@
     _this.LSC.Button({
       icon: "star3",
       tooltip: "Load example from gallery",
-      help: "Load example from our very neat <b>example gallery</b>. Each example comes with a\nlittle explanatory text, that gives your a hit about why this might be important.\nNotice that some of the examples are so large that we can't handle at this point.",
+      help: "Load example from our very neat <b>example gallery</b>. Each example comes with a\nsmall description, providing a hint about why it might be interesting.\nNote that some of the examples are so large that we cannot be handled at this point.",
       action: examples
     });
     addChart();
@@ -441,7 +444,7 @@
       _this.Charts[_this.CurrentIndex] = _this.CurrentChart.toJSON();
     }
     try {
-      data = _this.LSC.toSMV($.secureEvalJSON($.toJSON(_this.Charts)));
+      data = _this.LSC.toSMV($.secureEvalJSON($.toJSON(_this.Charts)), false);
     } catch (error) {
       alert("An error occurred during translation.\nPlease provide at least one message.");
       return;

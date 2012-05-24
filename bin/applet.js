@@ -83,23 +83,31 @@
     $("#closeprogress").click(exit);
     $("#progressdialog").fadeIn(cfg.animation.speed);
     $("#operation").html("Loading Model...");
-    if (app.loadSMV(nextModel)) {
-      $("#operation").html("Checking Realizability...");
-      if (app.game().realizable()) {
-        $("#operation").html("Synthesizing Strategy...");
-        if (synthesize) {
-          result = parseInt(app.game().synthesize()) || -1;
-          if (result >= 0) {
-            $("#operation").html("Strategy Synthesized");
+    try {
+      if (app.loadSMV(nextModel)) {
+        $("#operation").html("Checking Realizability...");
+        if (app.game() === null) {
+          reportProgress("Failed loading transition system.");
+        }
+        if (app.game().realizable()) {
+          $("#operation").html("Synthesizing Strategy...");
+          if (synthesize) {
+            result = parseInt(app.game().synthesize()) || -1;
+            if (result >= 0) {
+              $("#operation").html("Strategy Synthesized");
+            } else {
+              $("#operation").html("Synthesis Failed");
+            }
           } else {
-            $("#operation").html("Synthesis Failed");
+            $("#operation").html("Model is Realizable");
           }
         } else {
-          $("#operation").html("Model is Realizable");
+          $("#operation").html("Model is Not Realizable");
         }
-      } else {
-        $("#operation").html("Model is Not Realizable");
       }
+    } catch (error) {
+      $("#operation").html("Model Checking Failed");
+      reportProgress("\nError: " + error);
     }
     $("#closeprogress").show();
     unspin();
@@ -107,7 +115,6 @@
   };
 
   this.reportProgress = function(info) {
-    log(info);
     $("#console").html($("#console").html() + info);
     return $("#console").scrollTop($("#console")[0].scrollHeight);
   };

@@ -476,9 +476,21 @@
           m.prevSrcLocs = m.prevDstLocs = [];
         }
       }
+      chart.lastCopy = ((function() {
+        var _len7, _p, _ref10, _results;
+        _ref10 = chart.messages;
+        _results = [];
+        for (_p = 0, _len7 = _ref10.length; _p < _len7; _p++) {
+          m = _ref10[_p];
+          if (m.location < chart.resloc) {
+            _results.push(m);
+          }
+        }
+        return _results;
+      })()).length;
       chart.copies = (function() {
         _results = [];
-        for (var _p = 1, _ref10 = chart.messages.length; 1 <= _ref10 ? _p <= _ref10 : _p >= _ref10; 1 <= _ref10 ? _p++ : _p--){ _results.push(_p); }
+        for (var _p = 1, _ref10 = chart.lastCopy; 1 <= _ref10 ? _p <= _ref10 : _p >= _ref10; 1 <= _ref10 ? _p++ : _p--){ _results.push(_p); }
         return _results;
       }).apply(this);
     }
@@ -604,7 +616,7 @@
           _ref13 = chart.copies;
           for (_u = 0, _len11 = _ref13.length; _u < _len11; _u++) {
             c = _ref13[_u];
-            if (c === chart.messages.length) {
+            if (c === chart.lastCopy) {
               Case(V('gbuchi')(Eq(C(gbi(chart, c))(And(V(Active(chart, c))(Eq(False)))))), C(gbi(chart.number + 1, 1)));
             } else {
               Case(V('gbuchi')(Eq(C(gbi(chart, c))(And(V(Active(chart, c))(Eq(False)))))), C(gbi(chart, c + 1)));
@@ -635,7 +647,7 @@
               for (_v = 0, _len12 = _ref14.length; _v < _len12; _v++) {
                 inst = _ref14[_v];
                 _results3.push(Next(Loc(inst, chart, c), Switch(function() {
-                  var at_end, ci, does_reset, in_mainchart, last_msg, may_move, move_msg, msgs, relevant_msgs, _len13, _len14, _len15, _len16, _w, _x, _y, _z;
+                  var at_end, ci, does_reset, in_mainchart, last_msg, may_move, move_msg, msgs, other, otherinst, relevant_msgs, _aa, _len13, _len14, _len15, _len16, _len17, _ref15, _w, _x, _y, _z;
                   if (chart.disabled) {
                     Comment("Go to dead state, since mainchart is false");
                     Case(V(Active(chart, c))(Eq(True)), C(inst.maxLoc + 1));
@@ -686,6 +698,16 @@
                       last_msg = m;
                     }
                   }
+                  other = last_msg.source === inst.name ? last_msg.target : last_msg.source;
+                  _ref15 = chart.instances;
+                  for (_x = 0, _len14 = _ref15.length; _x < _len14; _x++) {
+                    otherinst = _ref15[_x];
+                    if (otherinst.name === other) {
+                      if (otherinst.maxLoc !== last_msg.location) {
+                        last_msg = null;
+                      }
+                    }
+                  }
                   in_mainchart = function(m) {
                     if (m.location > chart.lineloc) {
                       return True;
@@ -695,11 +717,11 @@
                   };
                   if (c !== 1) {
                     may_move = V(Started(chart, c))(Eq(True(Or(And((function() {
-                      var _len14, _ref15, _results4, _x;
-                      _ref15 = chart.copies;
+                      var _len15, _ref16, _results4, _y;
+                      _ref16 = chart.copies;
                       _results4 = [];
-                      for (_x = 0, _len14 = _ref15.length; _x < _len14; _x++) {
-                        ci = _ref15[_x];
+                      for (_y = 0, _len15 = _ref16.length; _y < _len15; _y++) {
+                        ci = _ref16[_y];
                         if (ci < c) {
                           _results4.push(V(Started(chart, ci))(Eq(True)));
                         }
@@ -710,37 +732,39 @@
                     may_move = True;
                   }
                   move_msg = function(m) {
-                    return V(Loc(m.source, chart, c))(In(Set(m.prevSrcLocs)(And(V(Loc(m.target, chart, c))(In(Set(m.prevDstLocs)(And(m.fires(And(may_move))))))))));
+                    return V(Loc(m.source, chart, c))(In(Set(m.prevSrcLocs)(And(V(Loc(m.target, chart, c))(In(Set(m.prevDstLocs)(And(m.fires(And(P(may_move)))))))))));
                   };
-                  Comment("Reset on last message if others are at end or resetting too");
-                  at_end = And((function() {
-                    var _len14, _ref15, _ref16, _results4, _x;
-                    _ref15 = chart.instances;
-                    _results4 = [];
-                    for (_x = 0, _len14 = _ref15.length; _x < _len14; _x++) {
-                      i = _ref15[_x];
-                      if ((_ref16 = i.name) !== last_msg.source && _ref16 !== last_msg.target) {
-                        _results4.push(V(Loc(i, chart, c))(Eq(C(i.maxLoc))));
+                  if ((last_msg != null) && !chart.disabled) {
+                    Comment("Reset on last message if others are at end or resetting too");
+                    at_end = And((function() {
+                      var _len15, _ref16, _ref17, _results4, _y;
+                      _ref16 = chart.instances;
+                      _results4 = [];
+                      for (_y = 0, _len15 = _ref16.length; _y < _len15; _y++) {
+                        i = _ref16[_y];
+                        if ((_ref17 = i.name) !== last_msg.source && _ref17 !== last_msg.target) {
+                          _results4.push(V(Loc(i, chart, c))(Eq(C(i.maxLoc))));
+                        }
                       }
+                      return _results4;
+                    })());
+                    if (last_msg !== null) {
+                      Case(move_msg(last_msg)(And(at_end)), C(0));
                     }
-                    return _results4;
-                  })());
-                  if (last_msg !== null) {
-                    Case(move_msg(last_msg)(And(at_end)), C(0));
                   }
                   Comment("Move forward on each message on this instance line");
-                  for (_x = 0, _len14 = msgs.length; _x < _len14; _x++) {
-                    m = msgs[_x];
+                  for (_y = 0, _len15 = msgs.length; _y < _len15; _y++) {
+                    m = msgs[_y];
                     Case(move_msg(m)(And(V(Active(chart, c))(Eq(in_mainchart(m))))), C(m.location));
                   }
                   Comment("If message is relevant and chart inactive reset pre-chart");
-                  for (_y = 0, _len15 = relevant_msgs.length; _y < _len15; _y++) {
-                    m = relevant_msgs[_y];
+                  for (_z = 0, _len16 = relevant_msgs.length; _z < _len16; _z++) {
+                    m = relevant_msgs[_z];
                     Case(V(Active(chart, c))(Eq(False(And(m.fires)))), C(0));
                   }
                   Comment("If message is relevant and chart active go to dead location");
-                  for (_z = 0, _len16 = relevant_msgs.length; _z < _len16; _z++) {
-                    m = relevant_msgs[_z];
+                  for (_aa = 0, _len17 = relevant_msgs.length; _aa < _len17; _aa++) {
+                    m = relevant_msgs[_aa];
                     Case(V(Active(chart, c))(Eq(True(And(m.fires)))), C(inst.maxLoc + 1));
                   }
                   Comment("Clean-up the reset operation");

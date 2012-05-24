@@ -40,6 +40,245 @@
   };
 
   Example({
+    title: "Bank",
+    description: "<b>Example from paper:</b> Illustrates the interaction between a customer and bank.\nWhen the customer enters the bank he or she must either deposit or withdraw to get a receipt.\nThis example is realizable as it is not possible to execute the <i>false</i> mainchart in the 'Bank Regulations' scenario.\nThis is because the prechart is aborted, whenever a <i>withdraw</i> or <i>deposit</i> message is seen.",
+    image: "images/bank.png",
+    json: {
+      "title": "Bank",
+      "charts": [
+        {
+          "name": "Bank Regulations",
+          "disabled": true,
+          "lineloc": 3,
+          "resloc": 4,
+          "locations": 7,
+          "instances": [
+            {
+              "name": "Bank",
+              "number": 0,
+              "env": false
+            }, {
+              "name": "Customer",
+              "number": 1,
+              "env": true
+            }
+          ],
+          "messages": [
+            {
+              "name": "enter",
+              "location": 1,
+              "source": "Customer",
+              "target": "Bank"
+            }, {
+              "name": "getReceipt",
+              "location": 2,
+              "source": "Bank",
+              "target": "Customer"
+            }, {
+              "name": "withdraw",
+              "location": 5,
+              "source": "Customer",
+              "target": "Bank"
+            }, {
+              "name": "deposit",
+              "location": 6,
+              "source": "Customer",
+              "target": "Bank"
+            }
+          ]
+        }, {
+          "name": "withdraw",
+          "disabled": false,
+          "lineloc": 3,
+          "resloc": 5,
+          "locations": 6,
+          "instances": [
+            {
+              "name": "Bank",
+              "number": 0,
+              "env": false
+            }, {
+              "name": "Customer",
+              "number": 1,
+              "env": true
+            }
+          ],
+          "messages": [
+            {
+              "name": "enter",
+              "location": 1,
+              "source": "Customer",
+              "target": "Bank"
+            }, {
+              "name": "withdraw",
+              "location": 2,
+              "source": "Customer",
+              "target": "Bank"
+            }, {
+              "name": "getReceipt",
+              "location": 4,
+              "source": "Bank",
+              "target": "Customer"
+            }
+          ]
+        }, {
+          "name": "deposit",
+          "disabled": false,
+          "lineloc": 3,
+          "resloc": 5,
+          "locations": 6,
+          "instances": [
+            {
+              "name": "Bank",
+              "number": 0,
+              "env": false
+            }, {
+              "name": "Customer",
+              "number": 1,
+              "env": true
+            }
+          ],
+          "messages": [
+            {
+              "name": "enter",
+              "location": 1,
+              "source": "Customer",
+              "target": "Bank"
+            }, {
+              "name": "deposit",
+              "location": 2,
+              "source": "Customer",
+              "target": "Bank"
+            }, {
+              "name": "getReceipt",
+              "location": 4,
+              "source": "Bank",
+              "target": "Customer"
+            }
+          ]
+        }
+      ]
+    }
+  });
+
+  Example({
+    title: "Bad Bank",
+    description: "Same as the bank example, yet this version is not realizable, since we can enter the <i>false</i> mainchart.",
+    image: "images/badbank.png",
+    json: {
+      "title": "Bad Bank",
+      "charts": [
+        {
+          "name": "Bank Regulations",
+          "disabled": true,
+          "lineloc": 3,
+          "resloc": 4,
+          "locations": 6,
+          "instances": [
+            {
+              "name": "Bank",
+              "number": 0,
+              "env": false
+            }, {
+              "name": "Customer",
+              "number": 1,
+              "env": true
+            }
+          ],
+          "messages": [
+            {
+              "name": "enter",
+              "location": 1,
+              "source": "Customer",
+              "target": "Bank"
+            }, {
+              "name": "getReceipt",
+              "location": 2,
+              "source": "Bank",
+              "target": "Customer"
+            }, {
+              "name": "withdraw",
+              "location": 5,
+              "source": "Customer",
+              "target": "Bank"
+            }
+          ]
+        }, {
+          "name": "withdraw",
+          "disabled": false,
+          "lineloc": 3,
+          "resloc": 5,
+          "locations": 6,
+          "instances": [
+            {
+              "name": "Bank",
+              "number": 0,
+              "env": false
+            }, {
+              "name": "Customer",
+              "number": 1,
+              "env": true
+            }
+          ],
+          "messages": [
+            {
+              "name": "enter",
+              "location": 1,
+              "source": "Customer",
+              "target": "Bank"
+            }, {
+              "name": "withdraw",
+              "location": 2,
+              "source": "Customer",
+              "target": "Bank"
+            }, {
+              "name": "getReceipt",
+              "location": 4,
+              "source": "Bank",
+              "target": "Customer"
+            }
+          ]
+        }, {
+          "name": "deposit",
+          "disabled": false,
+          "lineloc": 3,
+          "resloc": 5,
+          "locations": 6,
+          "instances": [
+            {
+              "name": "Bank",
+              "number": 0,
+              "env": false
+            }, {
+              "name": "Customer",
+              "number": 1,
+              "env": true
+            }
+          ],
+          "messages": [
+            {
+              "name": "enter",
+              "location": 1,
+              "source": "Customer",
+              "target": "Bank"
+            }, {
+              "name": "deposit",
+              "location": 2,
+              "source": "Customer",
+              "target": "Bank"
+            }, {
+              "name": "getReceipt",
+              "location": 4,
+              "source": "Bank",
+              "target": "Customer"
+            }
+          ]
+        }
+      ]
+    }
+  });
+
+  Example({
     title: "Ping/Pong Example",
     description: "Server always replies with pong, with client pings.<br>Simple and realizable.",
     image: "images/pingpong.png",
@@ -74,6 +313,232 @@
               "location": 3,
               "source": "Server",
               "target": "Client"
+            }
+          ]
+        }
+      ]
+    }
+  });
+
+  Example({
+    title: "The Pong/Pongo Disagreement",
+    description: "Two charts disagree about the order in which the server must reply, pong and pongo.<br>This example shows a simple conflict and is not realizable.",
+    image: "images/pongo.png",
+    json: {
+      "title": "Pongo.lsc",
+      "charts": [
+        {
+          "name": "PingPongPongo",
+          "disabled": false,
+          "lineloc": 2,
+          "resloc": 5,
+          "locations": 6,
+          "instances": [
+            {
+              "name": "Server",
+              "number": 1,
+              "env": false
+            }, {
+              "name": "Client",
+              "number": 0,
+              "env": true
+            }
+          ],
+          "messages": [
+            {
+              "name": "Ping",
+              "location": 1,
+              "source": "Client",
+              "target": "Server"
+            }, {
+              "name": "Pong",
+              "location": 3,
+              "source": "Server",
+              "target": "Client"
+            }, {
+              "name": "Pongo",
+              "location": 4,
+              "source": "Server",
+              "target": "Client"
+            }
+          ]
+        }, {
+          "name": "PingPongoPong",
+          "disabled": false,
+          "lineloc": 2,
+          "resloc": 5,
+          "locations": 6,
+          "instances": [
+            {
+              "name": "Server",
+              "number": 1,
+              "env": false
+            }, {
+              "name": "Client",
+              "number": 0,
+              "env": true
+            }
+          ],
+          "messages": [
+            {
+              "name": "Ping",
+              "location": 1,
+              "source": "Client",
+              "target": "Server"
+            }, {
+              "name": "Pongo",
+              "location": 3,
+              "source": "Server",
+              "target": "Client"
+            }, {
+              "name": "Pong",
+              "location": 4,
+              "source": "Server",
+              "target": "Client"
+            }
+          ]
+        }
+      ]
+    }
+  });
+
+  Example({
+    title: "The Nice Matrix",
+    description: "A subset of the specifications for a nice version of The Matrix. In this small world, a man chopping a tree, forces the tree to fall, and a bird to move (expressed independently in two senarios). However, if the bird moves after the tree has fallen, the observer will have seen death. We will not allow the observer to observe death.<br>Now we may wonder if a realization of The Nice Matrix is possible, our tool will answer this question. Click here to load the model and find out for your self.",
+    image: "images/matrix.png",
+    json: {
+      "title": "TheNiceMatrix.lsc",
+      "charts": [
+        {
+          "name": "ChopTree => Bird Moves",
+          "disabled": false,
+          "lineloc": 2,
+          "resloc": 4,
+          "locations": 5,
+          "instances": [
+            {
+              "name": "Bird",
+              "number": 0,
+              "env": false
+            }, {
+              "name": "Man",
+              "number": 2,
+              "env": true
+            }, {
+              "name": "Observer",
+              "number": 1,
+              "env": true
+            }
+          ],
+          "messages": [
+            {
+              "name": "ChopTree",
+              "location": 1,
+              "source": "Man",
+              "target": "Man"
+            }, {
+              "name": "Move",
+              "location": 3,
+              "source": "Bird",
+              "target": "Observer"
+            }
+          ]
+        }, {
+          "name": "ChopTree => Tree Falls",
+          "disabled": false,
+          "lineloc": 2,
+          "resloc": 4,
+          "locations": 5,
+          "instances": [
+            {
+              "name": "Tree",
+              "number": 0,
+              "env": false
+            }, {
+              "name": "Observer",
+              "number": 1,
+              "env": true
+            }, {
+              "name": "Man",
+              "number": 2,
+              "env": true
+            }
+          ],
+          "messages": [
+            {
+              "name": "ChopTree",
+              "location": 1,
+              "source": "Man",
+              "target": "Man"
+            }, {
+              "name": "Fall",
+              "location": 3,
+              "source": "Tree",
+              "target": "Observer"
+            }
+          ]
+        }, {
+          "name": "Tree on Bird => Death",
+          "disabled": false,
+          "lineloc": 3,
+          "resloc": 5,
+          "locations": 6,
+          "instances": [
+            {
+              "name": "Tree",
+              "number": 0,
+              "env": false
+            }, {
+              "name": "Bird",
+              "number": 1,
+              "env": false
+            }, {
+              "name": "Observer",
+              "number": 2,
+              "env": true
+            }
+          ],
+          "messages": [
+            {
+              "name": "Fall",
+              "location": 1,
+              "source": "Tree",
+              "target": "Observer"
+            }, {
+              "name": "Move",
+              "location": 2,
+              "source": "Bird",
+              "target": "Observer"
+            }, {
+              "name": "Death",
+              "location": 4,
+              "source": "Bird",
+              "target": "Observer"
+            }
+          ]
+        }, {
+          "name": "No observable Death",
+          "disabled": true,
+          "lineloc": 2,
+          "resloc": 3,
+          "locations": 4,
+          "instances": [
+            {
+              "name": "Bird",
+              "number": 0,
+              "env": false
+            }, {
+              "name": "Observer",
+              "number": 1,
+              "env": false
+            }
+          ],
+          "messages": [
+            {
+              "name": "Death",
+              "location": 1,
+              "source": "Bird",
+              "target": "Observer"
             }
           ]
         }
@@ -452,232 +917,6 @@
               "location": 10,
               "source": "User",
               "target": "Cover"
-            }
-          ]
-        }
-      ]
-    }
-  });
-
-  Example({
-    title: "The Pong/Pongo Disagreement",
-    description: "Two charts disagree about the order in which the server must reply, pong and pongo.<br>This example shows a simple conflict and is not realizable.",
-    image: "images/pongo.png",
-    json: {
-      "title": "Pongo.lsc",
-      "charts": [
-        {
-          "name": "PingPongPongo",
-          "disabled": false,
-          "lineloc": 2,
-          "resloc": 5,
-          "locations": 6,
-          "instances": [
-            {
-              "name": "Server",
-              "number": 1,
-              "env": false
-            }, {
-              "name": "Client",
-              "number": 0,
-              "env": true
-            }
-          ],
-          "messages": [
-            {
-              "name": "Ping",
-              "location": 1,
-              "source": "Client",
-              "target": "Server"
-            }, {
-              "name": "Pong",
-              "location": 3,
-              "source": "Server",
-              "target": "Client"
-            }, {
-              "name": "Pongo",
-              "location": 4,
-              "source": "Server",
-              "target": "Client"
-            }
-          ]
-        }, {
-          "name": "PingPongoPong",
-          "disabled": false,
-          "lineloc": 2,
-          "resloc": 5,
-          "locations": 6,
-          "instances": [
-            {
-              "name": "Server",
-              "number": 1,
-              "env": false
-            }, {
-              "name": "Client",
-              "number": 0,
-              "env": true
-            }
-          ],
-          "messages": [
-            {
-              "name": "Ping",
-              "location": 1,
-              "source": "Client",
-              "target": "Server"
-            }, {
-              "name": "Pongo",
-              "location": 3,
-              "source": "Server",
-              "target": "Client"
-            }, {
-              "name": "Pong",
-              "location": 4,
-              "source": "Server",
-              "target": "Client"
-            }
-          ]
-        }
-      ]
-    }
-  });
-
-  Example({
-    title: "The Nice Matrix",
-    description: "A subset of the specifications for a nice version of The Matrix. In this small world, a man chopping a tree, forces the tree to fall, and a bird to move (expressed independently in two senarios). However, if the bird moves after the tree has fallen, the observer will have seen death. We will not allow the observer to observe death.<br>Now we may wonder if a realization of The Nice Matrix is possible, our tool will answer this question. Click here to load the model and find out for your self.",
-    image: "images/matrix.png",
-    json: {
-      "title": "TheNiceMatrix.lsc",
-      "charts": [
-        {
-          "name": "ChopTree => Bird Moves",
-          "disabled": false,
-          "lineloc": 2,
-          "resloc": 4,
-          "locations": 5,
-          "instances": [
-            {
-              "name": "Bird",
-              "number": 0,
-              "env": false
-            }, {
-              "name": "Man",
-              "number": 2,
-              "env": true
-            }, {
-              "name": "Observer",
-              "number": 1,
-              "env": true
-            }
-          ],
-          "messages": [
-            {
-              "name": "ChopTree",
-              "location": 1,
-              "source": "Man",
-              "target": "Man"
-            }, {
-              "name": "Move",
-              "location": 3,
-              "source": "Bird",
-              "target": "Observer"
-            }
-          ]
-        }, {
-          "name": "ChopTree => Tree Falls",
-          "disabled": false,
-          "lineloc": 2,
-          "resloc": 4,
-          "locations": 5,
-          "instances": [
-            {
-              "name": "Tree",
-              "number": 0,
-              "env": false
-            }, {
-              "name": "Observer",
-              "number": 1,
-              "env": true
-            }, {
-              "name": "Man",
-              "number": 2,
-              "env": true
-            }
-          ],
-          "messages": [
-            {
-              "name": "ChopTree",
-              "location": 1,
-              "source": "Man",
-              "target": "Man"
-            }, {
-              "name": "Fall",
-              "location": 3,
-              "source": "Tree",
-              "target": "Observer"
-            }
-          ]
-        }, {
-          "name": "Tree on Bird => Death",
-          "disabled": false,
-          "lineloc": 3,
-          "resloc": 5,
-          "locations": 6,
-          "instances": [
-            {
-              "name": "Tree",
-              "number": 0,
-              "env": false
-            }, {
-              "name": "Bird",
-              "number": 1,
-              "env": false
-            }, {
-              "name": "Observer",
-              "number": 2,
-              "env": true
-            }
-          ],
-          "messages": [
-            {
-              "name": "Fall",
-              "location": 1,
-              "source": "Tree",
-              "target": "Observer"
-            }, {
-              "name": "Move",
-              "location": 2,
-              "source": "Bird",
-              "target": "Observer"
-            }, {
-              "name": "Death",
-              "location": 4,
-              "source": "Bird",
-              "target": "Observer"
-            }
-          ]
-        }, {
-          "name": "No observable Death",
-          "disabled": true,
-          "lineloc": 2,
-          "resloc": 3,
-          "locations": 4,
-          "instances": [
-            {
-              "name": "Bird",
-              "number": 0,
-              "env": false
-            }, {
-              "name": "Observer",
-              "number": 1,
-              "env": false
-            }
-          ],
-          "messages": [
-            {
-              "name": "Death",
-              "location": 1,
-              "source": "Bird",
-              "target": "Observer"
             }
           ]
         }
