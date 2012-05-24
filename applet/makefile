@@ -1,4 +1,3 @@
-SOURCES	= $(shell find jtlv/ -name "*.java")
 LIBS	= libs/javabdd-2.0.jar:libs/antlr-runtime-3.0.1.jar:libs/jdd.jar
 Applet.jar: jtlv.jar Applet.java
 	rm -f Applet.jar
@@ -15,11 +14,14 @@ LSCSMVChecker.jar: jtlv.jar LSCSMVChecker.java
 	cd bin/LSCSMVChecker/; find | xargs jar -cfe LSCSMVChecker.jar LSCSMVChecker; cd -
 	cp bin/LSCSMVChecker/LSCSMVChecker.jar LSCSMVChecker.jar
 jtlv.jar:
+	rm -rf jtlv/
 	mkdir -p bin/jtlv/
-	javac -classpath $(LIBS) -d bin/jtlv/ $(SOURCES)
+	tar -xzf jtlv.tar.gz
+	find jtlv/ -name "*.java" | xargs javac -classpath $(LIBS) -d bin/jtlv/
 	cd bin/jtlv/; find | xargs jar -cf jtlv.jar; cd -
 	cp bin/jtlv/jtlv.jar jtlv.jar
 clean:
+	rm -rf jtlv/
 	rm -rf bin/
 	rm -f jtlv.jar
 	rm -f Applet.jar
