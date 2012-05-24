@@ -262,6 +262,10 @@ gbi = (chart, c) ->
 			last_msg = null
 			for m in msgs when last_msg is null or last_msg.location < m.location
 				last_msg = m
+			other = if last_msg.source is inst.name then last_msg.target else last_msg.source
+			for otherinst in chart.instances when otherinst.name is other
+				if otherinst.maxLoc isnt last_msg.location
+					last_msg = null	#Remove apparently this can't ever be a last message of this chart
 
 			# Helper conditions
 			in_mainchart = (m) -> if m.location > chart.lineloc then True else False
@@ -271,9 +275,10 @@ gbi = (chart, c) ->
 				may_move = True
 			move_msg = (m) -> V(Loc m.source, chart, c) In Set(m.prevSrcLocs) And V(Loc m.target, chart, c) In Set(m.prevDstLocs) And m.fires And may_move
 			
-			Comment "Reset on last message if others are at end or resetting too"
-			at_end = (And (V(Loc i, chart, c) Eq C(i.maxLoc) for i in chart.instances when i.name not in [last_msg.source, last_msg.target]))
-			Case (move_msg(last_msg) And at_end),										C(0)					if last_msg isnt null
+			if last_msg? and not chart.disabled
+				Comment "Reset on last message if others are at end or resetting too"
+				at_end = (And (V(Loc i, chart, c) Eq C(i.maxLoc) for i in chart.instances when i.name not in [last_msg.source, last_msg.target]))
+				Case (move_msg(last_msg) And at_end),									C(0)					if last_msg isnt null
 
 			Comment "Move forward on each message on this instance line"
 			Case (move_msg(m) And V(Active chart, c) Eq in_mainchart(m)),				C(m.location)			for m in msgs

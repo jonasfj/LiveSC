@@ -67,26 +67,29 @@ executeCheck = ->
 	$("#progressdialog").fadeIn(cfg.animation.speed)
 
 	$("#operation").html("Loading Model...")
-	if app.loadSMV(nextModel)
-		$("#operation").html("Checking Realizability...")
-		if app.game().realizable()
-			$("#operation").html("Synthesizing Strategy...")
-			if synthesize
-				result = parseInt(app.game().synthesize()) || -1
-				if result >= 0
-					$("#operation").html("Strategy Synthesized")
+	try
+		if app.loadSMV(nextModel)
+			$("#operation").html("Checking Realizability...")
+			if app.game().realizable()
+				$("#operation").html("Synthesizing Strategy...")
+				if synthesize
+					result = parseInt(app.game().synthesize()) || -1
+					if result >= 0
+						$("#operation").html("Strategy Synthesized")
+					else
+						$("#operation").html("Synthesis Failed")
 				else
-					$("#operation").html("Synthesis Failed")
+					$("#operation").html("Model is Realizable")
 			else
-				$("#operation").html("Model is Realizable")
-		else
-			$("#operation").html("Model is Not Realizable")
+				$("#operation").html("Model is Not Realizable")
+	catch error
+		$("#operation").html("Model Checking Failed")
+		reportProgress("\nError: " + error)
 	$("#closeprogress").show()
 	unspin()
 	nextModel = null
 
 @reportProgress = (info) ->
-	log info
 	$("#console").html($("#console").html() + info)
 	# auto-scroll to bottom of console output
 	$("#console").scrollTop	$("#console")[0].scrollHeight
