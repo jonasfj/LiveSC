@@ -39,6 +39,7 @@
 		namepattern:		/[A-z]+\w*/g; # Used to sanitize names
 	app:
 		name:				"LiveSC"
+		version:			"1.0"
 
 # Automatically computed contants
 @cfg.instance.width = @cfg.instance.head.width + @cfg.instance.padding * 2
@@ -84,6 +85,7 @@ instant = false
 
 	#### Set default document title
 	setDocTitle("Untitled")
+	$("#welcometitle").html("Welcome to #{cfg.app.name} #{cfg.app.version}")
 	
 	#### Create workspace paper
 	@paper = @Raphael("workspace", cfg.chart.minwidth, "400")
@@ -132,7 +134,7 @@ instant = false
 					Adds a <b>new chart</b> to the current specification project.
 					Notice that all chart in the project
 					must be satisfied by any realization. Typically charts are used to express independent
-					senarios or counter examples.
+					senarios or counter-examples.
 					"""
 		action:		 -> addChart()
 
@@ -140,9 +142,9 @@ instant = false
 		icon:		"plus"
 		tooltip:	"Add system instance"
 		help:		"""
-					Adds a system <b>instance to the current chart</b>. You can change the instance type from
-					system to environment type later. Remember that instance names are unique within
-					a given chart. Instance type must also match type of the same instance in other
+					Adds a <i>system</i> <b>instance to the current chart</b>. You can change the instance type from
+					<i>system</i> (solid border) to <i>environment</i> (dashed border) type later. Instance names must be unique within
+					a given chart. The type of a given instance must also be the same in the other
 					charts.
 					"""
 		action:		 -> CurrentChart?.createInstance(false)
@@ -151,7 +153,7 @@ instant = false
 		icon:		"SwitchType"
 		tooltip:	"Toggle instance type (sys/env)"
 		help:		"""
-					Toggle instance type, ie. convert <b>system instance to environment instances</b>
+					Toggle instance type, ie. convert <b><i>system</i> instance to <i>environment</i> instances</b>
 					and vice versus.
 					Notice that the type of instances with same name in other charts will also change.
 					"""
@@ -161,10 +163,10 @@ instant = false
 		icon:		"exchange"
 		tooltip:	"Add message"
 		help:		"""
-					Add a <b>message exchange</b> to the current chart. Two messages are equal to if they have the
+					Add a <b>message exchange</b> to the current chart. Two messages are equal to one another if they have the
 					same name and go from the same sender to the same receiver.
-					Messages in the forbidden section, will abort the prefix and are not allowed to occur
-					in an execution of the main chart.
+					Messages in the forbidden section will abort the prefix and are not allowed to occur
+					in any execution of the main chart.
 					"""
 		action:		 -> CurrentChart?.addMessage()
 
@@ -172,7 +174,7 @@ instant = false
 		icon:		"cross"
 		tooltip:	"Toggle FALSE main chart"
 		help:		"""
-					Toggle <b>false main chart</b>, meaning that we consider the main chart impossible to satisfy.
+					Toggling <b>false main chart</b> causes the main chart to be impossible to satisfy.
 					This is equivalent to requiring that the prechart is never completed.
 					Note, any messages in the main chart will be ignored and are of no importance here.
 					"""
@@ -182,8 +184,8 @@ instant = false
 		icon:		"trash"
 		tooltip:	"Delete selection"
 		help:		"""
-					<b>Deletes</b> the current select, be it a message or and instance.
-					Note that if you delete and instance the associated messages will also be removed.
+					<b>Deletes</b> the current selected message or instance.
+					Note that if you delete an instance the associated messages will also be removed.
 					"""
 		action:		 -> CurrentChart?.deleteSelection()
 
@@ -193,7 +195,7 @@ instant = false
 		icon:		"cloudDown"
 		tooltip:	"Download project as JSON file"
 		help:		"""
-					Export <b>project as JSON</b>. The file can be saved to disk and drag 'n' dropped back
+					Export <b>project as JSON</b>. The file can be saved to disk and drag-and-dropped back
 					into this editor at any time. Thus, enabling you to save your projects.
 					"""
 		action:		 download
@@ -203,7 +205,7 @@ instant = false
 		tooltip:	"Export Chart as SVG"
 		help:		"""
 					Export current <b>chart as SVG</b>. With the ability to open, edit and export these files from
-					<a href='http://inkscape.org/'>Inkscape</a> this is quick way to generate high quality
+					<a href='http://inkscape.org/'>Inkscape</a>. This is a quick way to generate high quality
 					live sequence charts with annotations.
 					"""
 		action:		 exportSVG
@@ -212,9 +214,9 @@ instant = false
 		icon:		"download"
 		tooltip:	"Export SMV code"
 		help:		"""
-					Export the <b>transistion system</b> of 'repeated reachability' game this project was
-					translated to. You can use this to check realizability and synthesize a strategy
-					using a commandline version of our engine downloadable from 
+					Export the <b>transistion system</b> for the 'repeated reachability' game this project was
+					translated into. You can use this to check realizability and synthesize a strategy
+					using a command line version of our engine, which can be downloaded from 
 					<a href='https://github.com/jopsen/LiveSC' target='_blank'>github</a>.
 					"""
 		action:		 getSMV
@@ -226,7 +228,7 @@ instant = false
 		tooltip:	"Check realizability"
 		help:		"""
 					<b>Check realizability</b> of the current specification project.
-					This will lazy load a Java applet and for large projects this will not finish
+					This will load a Java applet and for large projects this will probably not finish
 					any time soon. Consider saving your project before trying this feature.
 					"""
 		action:		 check
@@ -237,7 +239,7 @@ instant = false
 		help:		"""
 					Check realizability and <b>synthesize a strategy</b> for the system, if the current
 					specification project is realizable. At the moment we only inform you about
-					the size of the BDD for representation of the transision system.
+					the size of the BDD representation of the transision system.
 					"""
 		action:		 synthesize
 
@@ -269,8 +271,8 @@ instant = false
 		tooltip:	"Load example from gallery"
 		help:		"""
 					Load example from our very neat <b>example gallery</b>. Each example comes with a
-					little explanatory text, that gives your a hit about why this might be important.
-					Notice that some of the examples are so large that we can't handle at this point.
+					small description, providing a hint about why it might be interesting.
+					Note that some of the examples are so large that we cannot be handled at this point.
 					"""
 		action:		 examples
 
