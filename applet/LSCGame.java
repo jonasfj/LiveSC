@@ -53,7 +53,7 @@ public class LSCGame{
 	/** Find Winning States, results cached in win */
 	private void computeWinningStates(){
 		if(reporter != null)
-			reporter.report("Computing Winning Stategy");
+			reporter.report("Computing winning configurations");
 		BDD z = Env.TRUE();
 		FixPoint<BDD> Fz = new FixPoint<BDD>();
 		while(Fz.advance(z)){
@@ -87,7 +87,7 @@ public class LSCGame{
 			computeWinningStates();
 
 		if(reporter != null)
-			reporter.report("Computing transistion from winning target configrations...\\n");
+			reporter.report("Computing transistions from winning target configrations...\\n");
 
 		// Compute commonly used expressions
 		BDD qwin = q.and(win);
@@ -98,7 +98,7 @@ public class LSCGame{
 		BDD trans = qwin.and(rXY).and(Env.prime(win));
 
 		if(reporter != null)
-			reporter.report("Computing loading to target");
+			reporter.report("Computing transitions leading to target configurations");
 
 		BDD y = Env.FALSE();
 		FixPoint<BDD> Fy = new FixPoint<BDD>();
@@ -113,7 +113,7 @@ public class LSCGame{
 				reporter.report(".");
 		}
 		if(reporter != null)
-			reporter.report("\\nStrategy computed, the BDD for the transistion system has " + trans.nodeCount() + " nodes");
+			reporter.report("\\nStrategy synthesized, the BDD for the transistion system has " + trans.nodeCount() + " nodes");
 		return "" + trans.nodeCount();
 	}
 }

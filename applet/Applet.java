@@ -42,13 +42,13 @@ public class Applet extends JApplet{
 		_game = null;
 		try{
 			if(reporter != null)
-				reporter.report("Reseting BDD environment...\\n");
+				reporter.report("Resetting BDD environment...\\n");
 			
 			// Reset the environment, invalidating all the instances of LSCGame
 			Env.resetEnv();
 
 			if(reporter != null)
-				reporter.report("Loading transitions system from SMV model (this might not finish)...\\n");
+				reporter.report("Loading transition system from SMV model...\\n");
 		
 			// Load Transition System
 			Env.loadSMVModuleFromString(model);
