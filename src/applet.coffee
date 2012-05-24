@@ -70,6 +70,8 @@ executeCheck = ->
 	try
 		if app.loadSMV(nextModel)
 			$("#operation").html("Checking Realizability...")
+			if app.game() == null
+				reportProgress("Failed loading transition system.")
 			if app.game().realizable()
 				$("#operation").html("Synthesizing Strategy...")
 				if synthesize

@@ -26,6 +26,21 @@ LSC.loadExample = (callback) ->
 	$("#examples").fadeIn(cfg.animation.speed)
 
 Example
+	title: "Bank"
+	description: """<b>Example from paper:</b> Illustrates the interaction between a customer and bank.
+					   When the customer enters the bank he or she must either deposit or withdraw to get a receipt.
+					   This example is realizable as it is not possible to execute the <i>false</i> mainchart in the 'Bank Regulations' scenario.
+					   This is because the prechart is aborted, whenever a <i>withdraw</i> or <i>deposit</i> message is seen."""
+	image: "images/bank.png"
+	json: {"title":"Bank","charts":[{"name":"Bank Regulations","disabled":true,"lineloc":3,"resloc":4,"locations":7,"instances":[{"name":"Bank","number":0,"env":false},{"name":"Customer","number":1,"env":true}],"messages":[{"name":"enter","location":1,"source":"Customer","target":"Bank"},{"name":"getReceipt","location":2,"source":"Bank","target":"Customer"},{"name":"withdraw","location":5,"source":"Customer","target":"Bank"},{"name":"deposit","location":6,"source":"Customer","target":"Bank"}]},{"name":"withdraw","disabled":false,"lineloc":3,"resloc":5,"locations":6,"instances":[{"name":"Bank","number":0,"env":false},{"name":"Customer","number":1,"env":true}],"messages":[{"name":"enter","location":1,"source":"Customer","target":"Bank"},{"name":"withdraw","location":2,"source":"Customer","target":"Bank"},{"name":"getReceipt","location":4,"source":"Bank","target":"Customer"}]},{"name":"deposit","disabled":false,"lineloc":3,"resloc":5,"locations":6,"instances":[{"name":"Bank","number":0,"env":false},{"name":"Customer","number":1,"env":true}],"messages":[{"name":"enter","location":1,"source":"Customer","target":"Bank"},{"name":"deposit","location":2,"source":"Customer","target":"Bank"},{"name":"getReceipt","location":4,"source":"Bank","target":"Customer"}]}]}	
+
+Example
+	title: "Bad Bank"
+	description: "Same as the bank example, yet this version is not realizable, since we can enter the <i>false</i> mainchart."
+	image: "images/badbank.png"
+	json: {"title":"Bad Bank","charts":[{"name":"Bank Regulations","disabled":true,"lineloc":3,"resloc":4,"locations":6,"instances":[{"name":"Bank","number":0,"env":false},{"name":"Customer","number":1,"env":true}],"messages":[{"name":"enter","location":1,"source":"Customer","target":"Bank"},{"name":"getReceipt","location":2,"source":"Bank","target":"Customer"},{"name":"withdraw","location":5,"source":"Customer","target":"Bank"}]},{"name":"withdraw","disabled":false,"lineloc":3,"resloc":5,"locations":6,"instances":[{"name":"Bank","number":0,"env":false},{"name":"Customer","number":1,"env":true}],"messages":[{"name":"enter","location":1,"source":"Customer","target":"Bank"},{"name":"withdraw","location":2,"source":"Customer","target":"Bank"},{"name":"getReceipt","location":4,"source":"Bank","target":"Customer"}]},{"name":"deposit","disabled":false,"lineloc":3,"resloc":5,"locations":6,"instances":[{"name":"Bank","number":0,"env":false},{"name":"Customer","number":1,"env":true}],"messages":[{"name":"enter","location":1,"source":"Customer","target":"Bank"},{"name":"deposit","location":2,"source":"Customer","target":"Bank"},{"name":"getReceipt","location":4,"source":"Bank","target":"Customer"}]}]}
+	
+Example
 	title: "Ping/Pong Example"
 	description: "Server always replies with pong, with client pings.<br>Simple and realizable."
 	image: "images/pingpong.png"

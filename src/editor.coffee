@@ -422,7 +422,7 @@ getSMV = =>
 	if @CurrentChart?
 		@Charts[@CurrentIndex] = @CurrentChart.toJSON()
 	try
-		data = @LSC.toSMV($.secureEvalJSON($.toJSON(@Charts)))
+		data = @LSC.toSMV($.secureEvalJSON($.toJSON(@Charts)),false)
 	catch error
 		alert "An error occurred during translation.\nPlease provide at least one message."
 		return

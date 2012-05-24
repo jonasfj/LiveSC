@@ -192,7 +192,8 @@ gbi = (chart, c) ->
 				m.prevDstLocs = [0, 1]
 			if m.location > chart.resloc
 				m.prevSrcLocs = m.prevDstLocs = []
-		chart.copies = [1..chart.messages.length]
+		chart.lastCopy = (m for m in chart.messages when m.location < chart.resloc).length
+		chart.copies = [1..chart.lastCopy]
 
 	return null if not StartSMV()
 
@@ -234,7 +235,7 @@ gbi = (chart, c) ->
 			Case (V('gbuchi') Eq C(0)),																		C(gbi 0, 1)
 			for chart in charts
 				for c in chart.copies
-					if c is chart.messages.length
+					if c is chart.lastCopy
 						Case (V('gbuchi') Eq C(gbi chart, c) And V(Active chart, c) Eq False), 				C(gbi chart.number + 1, 1)
 					else
 						Case (V('gbuchi') Eq C(gbi chart, c) And V(Active chart, c) Eq False), 				C(gbi chart, c + 1)
@@ -273,7 +274,7 @@ gbi = (chart, c) ->
 				may_move = V(Started chart, c) Eq True Or (And (V(Started chart, ci) Eq True for ci in chart.copies when ci < c))
 			else
 				may_move = True
-			move_msg = (m) -> V(Loc m.source, chart, c) In Set(m.prevSrcLocs) And V(Loc m.target, chart, c) In Set(m.prevDstLocs) And m.fires And may_move
+			move_msg = (m) -> V(Loc m.source, chart, c) In Set(m.prevSrcLocs) And V(Loc m.target, chart, c) In Set(m.prevDstLocs) And m.fires And P(may_move)
 			
 			if last_msg? and not chart.disabled
 				Comment "Reset on last message if others are at end or resetting too"
